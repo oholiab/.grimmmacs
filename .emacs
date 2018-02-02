@@ -20,15 +20,19 @@
 (eval-when-compile
   (require 'use-package))
 
+;; Pretty
+(use-package cyberpunk-theme :ensure t)
+
 (use-package evil :ensure t)
 (use-package evil-leader :ensure t)
 (use-package helm :ensure t)
 (use-package lispy :ensure t)
-(use-package cyberpunk-theme :ensure t)
+(use-package magit :ensure t)
+(use-package evil-magit :ensure t)
 
 (require 'helm-config)
-(helm-descbinds-mode)
 (require 'evil-leader)
+(require 'evil-magit)
 (require 'evil)
 (evil-leader/set-leader "<SPC>")
 (setq evil-leader/in-all-states 1)
@@ -45,11 +49,17 @@
 (evil-leader/set-key "w l" 'evil-window-right)
 (evil-leader/set-key "w p" 'evil-window-prev)
 (evil-leader/set-key "w n" 'evil-window-next)
+(evil-leader/set-key "w -" 'evil-window-split)
+(evil-leader/set-key "w |" 'evil-window-vsplit)
+(evil-leader/set-key "w d" 'evil-window-delete)
 ;; Buffer movement
 (evil-leader/set-key "b p" 'previous-buffer)
 (evil-leader/set-key "b n" 'next-buffer)
 (evil-leader/set-key "b b" 'helm-buffers-list)
-
+(evil-leader/set-key "b d" 'kill-buffer)
+(evil-leader/set-key "b D" 'kill-buffer-and-window)
+;; Git
+(evil-leader/set-key "g d" 'magit-diff)
 (helm-mode 1)
 
 ;; NFI, probably needs changing
