@@ -29,7 +29,9 @@
 (use-package lispy :ensure t)
 (use-package magit :ensure t)
 (use-package evil-magit :ensure t)
+(use-package which-key :ensure t)
 
+(require 'which-key)
 (require 'helm-config)
 (require 'evil-leader)
 (require 'evil-magit)
@@ -37,12 +39,18 @@
 (evil-leader/set-leader "<SPC>")
 (setq evil-leader/in-all-states 1)
 (global-evil-leader-mode)
+(setq which-key-enable-extended-define-key 1)
+(setq which-key-idle-delay 0)
+(which-key-mode)
 ;; File tree
+(which-key-declare-prefixes "<SPC> f" "file")
 (evil-leader/set-key "f f" 'helm-find-files)
 ;; Mode tree
+(which-key-declare-prefixes "<SPC> m" "mode")
 (evil-leader/set-key "m e r" 'eval-region)
 (evil-leader/set-key "m e b" 'eval-buffer)
 ;; Window movement
+(which-key-declare-prefixes "<SPC> w" "window")
 (evil-leader/set-key "w h" 'evil-window-left)
 (evil-leader/set-key "w j" 'evil-window-down)
 (evil-leader/set-key "w k" 'evil-window-up)
@@ -53,13 +61,16 @@
 (evil-leader/set-key "w |" 'evil-window-vsplit)
 (evil-leader/set-key "w d" 'evil-window-delete)
 ;; Buffer movement
+(which-key-declare-prefixes "<SPC> b" "buffer")
 (evil-leader/set-key "b p" 'previous-buffer)
 (evil-leader/set-key "b n" 'next-buffer)
 (evil-leader/set-key "b b" 'helm-buffers-list)
 (evil-leader/set-key "b d" 'kill-buffer)
 (evil-leader/set-key "b D" 'kill-buffer-and-window)
 ;; Git
+(which-key-declare-prefixes "<SPC> g" "git")
 (evil-leader/set-key "g d" 'magit-diff)
+
 (helm-mode 1)
 
 ;; NFI, probably needs changing
