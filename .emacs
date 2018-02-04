@@ -122,10 +122,14 @@
 (evil-leader/set-key "b b" 'helm-buffers-list)
 (evil-leader/set-key "b d" 'kill-buffer)
 (evil-leader/set-key "b D" 'kill-buffer-and-window)
+
 ;; Git
 (which-key-declare-prefixes "<SPC> g" "git")
+(evil-leader/set-key "g s" 'magit-status)
+(evil-leader/set-key "g b" 'magit-blame)
 (evil-leader/set-key "g d" 'magit-diff)
 (evil-leader/set-key "g p" 'magit-push)
+(evil-leader/set-key "g r" 'magit-remote-config-popup)
 
 ;; LISP - why doesn't this work???
 (which-key-declare-prefixes "<SPC> k" "lisp")
