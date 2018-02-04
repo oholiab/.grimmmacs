@@ -7,12 +7,6 @@
 (setq package-enable-at-startup nil)
 (package-initialize)
 
-(setq package-list
-      '(
-	evil
-	helm
-	))
-
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
@@ -43,13 +37,13 @@
 ;; # and yapf for code formatting
 ;; pip install yapf
 (use-package elpy :ensure t)
-
  
 (require 'which-key)
 (require 'helm-config)
 (require 'evil-leader)
 (require 'evil-magit)
 (require 'evil)
+(setq evil-esc-delay 0)
 (evil-leader/set-leader "<SPC>")
 (setq evil-leader/in-all-states 1)
 (global-evil-leader-mode)
@@ -57,7 +51,39 @@
 (setq which-key-idle-delay 0)
 (which-key-mode)
 
+;; Prettify
+(add-to-list 'which-key-replacement-alist '(("TAB" . nil) . ("↹  " . nil)))
+(add-to-list 'which-key-replacement-alist '(("RET" . nil) . ("⏎  " . nil)))
+(add-to-list 'which-key-replacement-alist '(("DEL" . nil) . ("⇤  " . nil)))
+(add-to-list 'which-key-replacement-alist '(("SPC" . nil) . ("␣  " . nil)))
+
+(defun run-or-raise-term-buffer ()
+  "Create or visit a terminal buffer."
+  (interactive)
+  (if (not (get-buffer "*ansi-term*"))
+      (progn
+        (split-window-sensibly (selected-window))
+        (other-window 1)
+        (ansi-term (getenv "SHELL")))
+    (switch-to-buffer-other-window "*ansi-term*")))
+
+(defun run-or-raise-ielm-buffer ()
+  "Create or visit a `ielm' buffer."
+  (interactive)
+  (if (not (get-buffer "*ielm*"))
+      (progn
+        (split-window-sensibly (selected-window))
+        (other-window 1)
+        (ielm))
+    (switch-to-buffer-other-window "*ielm*")))
+
+;; Meta stuff
+(which-key-declare-prefixes "<SPC> <SPC>" "meta")
+(evil-leader/set-key "<SPC> t" 'run-or-raise-term-buffer)
+(evil-leader/set-key "<SPC> r" 'run-or-raise-ielm-buffer)
+
 ;; Help tree
+(which-key-declare-prefixes "<SPC> h" "help")
 (evil-leader/set-key "h" help-map)
 
 ;; File tree
@@ -99,9 +125,11 @@
 ;; Git
 (which-key-declare-prefixes "<SPC> g" "git")
 (evil-leader/set-key "g d" 'magit-diff)
-;; LISP - why doesn't this work???
-(evil-leader/set-key "k" lispy-mode-map)
+(evil-leader/set-key "g p" 'magit-push)
 
+;; LISP - why doesn't this work???
+(which-key-declare-prefixes "<SPC> k" "lisp")
+(evil-leader/set-key "k" lispy-mode-map)
 (helm-mode 1)
 
 ;; NFI, probably needs changing
@@ -121,3 +149,4 @@
 ;; Fuck you
 (setq custom-file "/tmp/null")
 (load custom-file 'noerror)
+
