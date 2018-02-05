@@ -21,12 +21,14 @@
 (use-package evil-leader :ensure t)
 (use-package helm :ensure t)
 (use-package lispy :ensure t)
+(use-package evil-lispy :ensure t)
 (use-package magit :ensure t)
 (use-package evil-magit :ensure t)
 (use-package which-key :ensure t)
 (use-package markdown-mode :ensure t)
 (use-package rust-mode :ensure t)
 (use-package cider :ensure t)
+(use-package org :ensure t)
 ;; For elpy:
 ;; pip install rope
 ;; pip install jedi
@@ -37,18 +39,43 @@
 ;; # and yapf for code formatting
 ;; pip install yapf
 (use-package elpy :ensure t)
- 
+(use-package evil-org
+  :ensure t
+  :after org
+  :config
+  (add-hook 'org-mode-hook 'evil-org-mode)
+  (add-hook 'evil-org-mode-hook
+	    (lambda ()
+	      (evil-org-set-key-theme))))
+
+(defalias 'outline-show-all 'show-all)
+(if (file-exists-p "~/.grimmmacs/jira.el")
+    (load "~/.grimmmacs/jira.el"))
+
+(defun get-file-contents (filename)
+  "Return the contents of FILENAME."
+  (with-temp-buffer
+    (insert-file-contents filename)
+    (buffer-string)))
+
+(defun re-source-ssh-auth ()
+  (setenv "SSH_AUTH_SOCK" (replace-regexp-in-string "\n$" "" (get-file-contents "~/.ssh_socket"))))
+
 (require 'which-key)
 (require 'helm-config)
 (require 'evil-leader)
 (require 'evil-magit)
+(require 'evil-lispy)
+(add-hook 'emacs-lisp-mode-hook #'evil-lispy-mode)
+(add-hook 'clojure-mode-hook #'evil-lispy-mode)
 (require 'evil)
+(setq evil-want-C-i-jump nil)
 (setq evil-esc-delay 0)
 (evil-leader/set-leader "<SPC>")
 (setq evil-leader/in-all-states 1)
 (global-evil-leader-mode)
 (setq which-key-enable-extended-define-key 1)
-(setq which-key-idle-delay 0)
+(setq which-key-idle-delay 0.001)
 (which-key-mode)
 
 ;; Prettify
@@ -140,6 +167,18 @@
 (which-key-declare-prefixes "<SPC> k" "lisp")
 (evil-leader/set-key "k" lispy-mode-map)
 (helm-mode 1)
+
+;; ORG
+(which-key-declare-prefixes "<SPC> o" "org")
+(evil-leader/set-key "o l" 'org-store-link)
+(evil-leader/set-key "o a" 'org-agenda)
+(evil-leader/set-key "o c" 'org-capture)
+(evil-leader/set-key "o b" 'org-iswitchb)
+
+;; Quit
+(which-key-declare-prefixes "<SPC> q" "quit")
+(evil-leader/set-key "q S" 'save-buffers-kill-terminal)
+
 
 ;; NFI, probably needs changing
 (require 'lispy)
