@@ -102,6 +102,11 @@
 (which-key-declare-prefixes "<SPC> m s" "repl")
 (evil-leader/set-key-for-mode 'clojure-mode "m s i" 'cider-jack-in)
 (evil-leader/set-key-for-mode 'clojure-mode "m s s" 'cider-repl)
+(which-key-declare-prefixes "<SPC> m c" "config")
+(evil-leader/set-key-for-mode 'python-mode "m c" 'elpy-config)
+(which-key-declare-prefixes "<SPC> m v" "venv")
+(evil-leader/set-key-for-mode 'python-mode "m v a" 'pyvenv-activate)
+(evil-leader/set-key-for-mode 'python-mode "m v d" 'pyvenv-deactivate)
 
 ;; Window movement
 (which-key-declare-prefixes "<SPC> w" "window")
