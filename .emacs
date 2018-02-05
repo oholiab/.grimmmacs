@@ -48,7 +48,10 @@
 	    (lambda ()
 	      (evil-org-set-key-theme))))
 
-(defalias 'outline-show-all 'show-all)
+(if (version< emacs-version "25")
+    (progn
+      (defalias 'outline-show-all 'show-all)))
+
 (if (file-exists-p "~/.grimmmacs/jira.el")
     (load "~/.grimmmacs/jira.el"))
 
@@ -59,6 +62,7 @@
     (buffer-string)))
 
 (defun re-source-ssh-auth ()
+  "Takes the contents of `~/.ssh_socket` and exports as SSH_AUTH_SOCK (for reattaching to ssh agent whilst in mosh)"
   (setenv "SSH_AUTH_SOCK" (replace-regexp-in-string "\n$" "" (get-file-contents "~/.ssh_socket"))))
 
 (require 'which-key)
@@ -152,7 +156,7 @@
 (evil-leader/set-key "b p" 'previous-buffer)
 (evil-leader/set-key "b n" 'next-buffer)
 (evil-leader/set-key "b b" 'helm-buffers-list)
-(evil-leader/set-key "b d" 'kill-buffer)
+(evil-leader/set-key "b d" 'kill-this-buffer)
 (evil-leader/set-key "b D" 'kill-buffer-and-window)
 
 ;; Git
