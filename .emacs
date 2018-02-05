@@ -28,7 +28,7 @@
 (use-package markdown-mode :ensure t)
 (use-package rust-mode :ensure t)
 (use-package cider :ensure t)
-(use-package org :ensure t)
+(use-package org :ensure org-plus-contrib :pin org)
 ;; For elpy:
 ;; pip install rope
 ;; pip install jedi
