@@ -28,6 +28,9 @@
 (use-package markdown-mode :ensure t)
 (use-package rust-mode :ensure t)
 (use-package cider :ensure t)
+(use-package projectile :ensure t)
+(projectile-mode)
+(use-package helm-projectile :ensure t)
 (use-package org :ensure org-plus-contrib :pin org)
 ;; For elpy:
 ;; pip install rope
@@ -124,11 +127,13 @@
 ;; Mode tree
 (which-key-declare-prefixes "<SPC> m" "mode")
 (which-key-declare-prefixes "<SPC> m e" "evaluate")
-(evil-leader/set-key "m e r" 'eval-region)
-(evil-leader/set-key "m e b" 'eval-buffer)
+(evil-leader/set-key-for-mode 'emacs-lisp-mode "m e r" 'eval-region)
+(evil-leader/set-key-for-mode 'emacs-lisp-mode "m e b" 'eval-buffer)
+(evil-leader/set-key-for-mode 'clojure-mode "m e r" 'cider-eval-region)
+(evil-leader/set-key-for-mode 'clojure-mode "m e b" 'cider-eval-buffer)
 (which-key-declare-prefixes "<SPC> m c" "compile")
 (evil-leader/set-key-for-mode 'rust-mode "m c c" 'rust-compile)
-(which-key-declare-prefixes "<SPC> m t" "test")
+(which-key-declare-prefixes-for-mode 'python-mode "<SPC> m t" "test")
 (evil-leader/set-key-for-mode 'python-mode "m t t" 'elpy-test)
 (which-key-declare-prefixes "<SPC> m s" "repl")
 (evil-leader/set-key-for-mode 'clojure-mode "m s i" 'cider-jack-in)
@@ -178,6 +183,12 @@
 (evil-leader/set-key "o a" 'org-agenda)
 (evil-leader/set-key "o c" 'org-capture)
 (evil-leader/set-key "o b" 'org-iswitchb)
+(which-key-declare-prefixes-for-mode 'org-mode "<SPC> m t" "todo")
+(evil-leader/set-key-for-mode 'org-mode "m t t" 'org-todo)
+(evil-leader/set-key-for-mode 'org-mode "m t i" 'org-insert-todo-heading)
+(which-key-declare-prefixes-for-mode 'org-mode "<SPC> m l" "link")
+(evil-leader/set-key-for-mode 'org-mode "m l o" 'org-open-at-point)
+(evil-leader/set-key-for-mode 'org-mode "m l i" 'org-insert-link)
 
 ;; Quit
 (which-key-declare-prefixes "<SPC> q" "quit")
@@ -202,3 +213,12 @@
 (setq custom-file "/tmp/null")
 (load custom-file 'noerror)
 
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (org . t)
+   (sh . t)
+   (python . t)))
+
+(setq org-todo-keyword-faces
+      '(("CANCELED" . (:foreground "blue" :weight bold))))
