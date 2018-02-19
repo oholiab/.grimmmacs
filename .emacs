@@ -177,6 +177,18 @@
 (evil-leader/set-key "k" lispy-mode-map)
 (helm-mode 1)
 
+(defun run-make ()
+  (interactive)
+  (shell-command-to-string "make"))
+
+(defun reload-ff ()
+  (interactive)
+  (shell-command-to-string "osascript ~/reloadff.scpt"))
+
+;; Command execution
+(which-key-declare-prefixes "<SPC> x" "execute")
+(evil-leader/set-key "x m" 'run-make)
+(evil-leader/set-key "x r" 'reload-ff)
 ;; ORG
 (which-key-declare-prefixes "<SPC> o" "org")
 (evil-leader/set-key "o l" 'org-store-link)
@@ -221,4 +233,5 @@
    (python . t)))
 
 (setq org-todo-keyword-faces
-      '(("CANCELED" . (:foreground "blue" :weight bold))))
+      '(("CANCELED" . (:foreground "blue" :weight bold))
+        ("DEFERRED" . (:foreground "gray" :weight bold))))
