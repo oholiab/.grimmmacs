@@ -32,6 +32,8 @@
 (projectile-mode)
 (use-package helm-projectile :ensure t)
 (use-package org :ensure org-plus-contrib :pin org)
+(use-package flymake :ensure t)
+(use-package flymake-cursor :ensure t)
 ;; For elpy:
 ;; pip install rope
 ;; pip install jedi
@@ -133,6 +135,9 @@
 (evil-leader/set-key-for-mode 'clojure-mode "m e b" 'cider-eval-buffer)
 (which-key-declare-prefixes "<SPC> m c" "compile")
 (evil-leader/set-key-for-mode 'rust-mode "m c c" 'rust-compile)
+(which-key-declare-prefixes-for-mode 'python-mode "<SPC> m f" "find")
+(evil-leader/set-key-for-mode 'python-mode "m f g" 'elpy-goto-definition)
+(evil-leader/set-key-for-mode 'python-mode "m f r" 'elpy-rgrep-symbol)
 (which-key-declare-prefixes-for-mode 'python-mode "<SPC> m t" "test")
 (evil-leader/set-key-for-mode 'python-mode "m t t" 'elpy-test)
 (which-key-declare-prefixes "<SPC> m s" "repl")
@@ -201,6 +206,10 @@
 (which-key-declare-prefixes-for-mode 'org-mode "<SPC> m l" "link")
 (evil-leader/set-key-for-mode 'org-mode "m l o" 'org-open-at-point)
 (evil-leader/set-key-for-mode 'org-mode "m l i" 'org-insert-link)
+;; Projectile
+(which-key-declare-prefixes "<SPC> p" "projectile")
+(evil-leader/set-key "p p" 'projectile-switch-project)
+(evil-leader/set-key "p f" 'projectile-find-file)
 
 ;; Quit
 (which-key-declare-prefixes "<SPC> q" "quit")
@@ -235,3 +244,21 @@
 (setq org-todo-keyword-faces
       '(("CANCELED" . (:foreground "blue" :weight bold))
         ("DEFERRED" . (:foreground "gray" :weight bold))))
+
+(require 'flymake)
+(require 'flymake-cursor)
+
+(defun flymake-pylint-init ()
+ (let* ((temp-file (flymake-init-create-temp-buffer-copy
+                     'flymake-create-temp-inplace))
+		             (local-file (file-relative-name
+			                          temp-file
+						                       (file-name-directory buffer-file-name))))
+								          (list "pyflakes" (list local-file))))
+
+(add-to-list 'flymake-allowed-file-name-masks
+             '("\\.py\\'" flymake-pylint-init))
+
+; Load flymake on non-temp buffers
+(add-hook 'python-mode-hook (lambda () (unless (eq buffer-file-name nil) (flymake-mode 1))))
+(setq elpy-test-pytest-runner-command '("python" "-m" "pytest"))
