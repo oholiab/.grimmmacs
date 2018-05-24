@@ -152,14 +152,19 @@
 ;; Window movement
 (which-key-declare-prefixes "<SPC> w" "window")
 (evil-leader/set-key "w h" 'evil-window-left)
+(evil-leader/set-key "w H" 'evil-window-move-far-left)
 (evil-leader/set-key "w j" 'evil-window-down)
+(evil-leader/set-key "w J" 'evil-window-move-very-bottom)
 (evil-leader/set-key "w k" 'evil-window-up)
+(evil-leader/set-key "w K" 'evil-window-move-very-top)
 (evil-leader/set-key "w l" 'evil-window-right)
+(evil-leader/set-key "w L" 'evil-window-move-far-right)
 (evil-leader/set-key "w p" 'evil-window-prev)
 (evil-leader/set-key "w n" 'evil-window-next)
 (evil-leader/set-key "w -" 'evil-window-split)
 (evil-leader/set-key "w |" 'evil-window-vsplit)
 (evil-leader/set-key "w d" 'evil-window-delete)
+(evil-leader/set-key "w N" 'evil-window-new)
 
 ;; Buffer movement
 (which-key-declare-prefixes "<SPC> b" "buffer")
@@ -262,3 +267,4 @@
 ; Load flymake on non-temp buffers
 (add-hook 'python-mode-hook (lambda () (unless (eq buffer-file-name nil) (flymake-mode 1))))
 (setq elpy-test-pytest-runner-command '("python" "-m" "pytest"))
+(setq elpy-test-runner 'elpy-test-pytest-runner)
