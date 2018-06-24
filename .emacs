@@ -216,6 +216,12 @@
 (evil-leader/set-key "p p" 'projectile-switch-project)
 (evil-leader/set-key "p f" 'projectile-find-file)
 
+;; Toggles
+(which-key-declare-prefixes "<SPC> t" "toggle")
+(evil-leader/set-key "t w" 'toggle-word-wrap)
+(evil-leader/set-key "t t" 'toggle-truncate-lines)
+(evil-leader/set-key "t n" 'linum-mode)
+
 ;; Quit
 (which-key-declare-prefixes "<SPC> q" "quit")
 (evil-leader/set-key "q S" 'save-buffers-kill-terminal)
