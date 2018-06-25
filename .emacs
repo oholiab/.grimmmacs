@@ -34,6 +34,7 @@
 (use-package org :ensure org-plus-contrib :pin org)
 (use-package flymake :ensure t)
 (use-package flymake-cursor :ensure t)
+(use-package terraform-mode :ensure t)
 ;; For elpy:
 ;; pip install rope
 ;; pip install jedi
@@ -133,6 +134,7 @@
 (evil-leader/set-key-for-mode 'emacs-lisp-mode "m e b" 'eval-buffer)
 (evil-leader/set-key-for-mode 'clojure-mode "m e r" 'cider-eval-region)
 (evil-leader/set-key-for-mode 'clojure-mode "m e b" 'cider-eval-buffer)
+(evil-leader/set-key-for-mode 'python-mode "m e b" 'elpy-shell-send-buffer-and-go)
 (which-key-declare-prefixes "<SPC> m c" "compile")
 (evil-leader/set-key-for-mode 'rust-mode "m c c" 'rust-compile)
 (which-key-declare-prefixes-for-mode 'python-mode "<SPC> m f" "find")
@@ -143,6 +145,8 @@
 (which-key-declare-prefixes "<SPC> m s" "repl")
 (evil-leader/set-key-for-mode 'clojure-mode "m s i" 'cider-jack-in)
 (evil-leader/set-key-for-mode 'clojure-mode "m s s" 'cider-repl)
+(evil-leader/set-key-for-mode 'python-mode "m s i" 'elpy-shell-switch-to-shell)
+(evil-leader/set-key-for-mode 'python-mode "m s s" 'elpy-shell-switch-to-shell)
 (which-key-declare-prefixes "<SPC> m c" "config")
 (evil-leader/set-key-for-mode 'python-mode "m c" 'elpy-config)
 (which-key-declare-prefixes "<SPC> m v" "venv")
