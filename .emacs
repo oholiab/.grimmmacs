@@ -211,6 +211,7 @@
 (which-key-declare-prefixes-for-mode 'org-mode "<SPC> m l" "link")
 (evil-leader/set-key-for-mode 'org-mode "m l o" 'org-open-at-point)
 (evil-leader/set-key-for-mode 'org-mode "m l i" 'org-insert-link)
+
 ;; Projectile
 (which-key-declare-prefixes "<SPC> p" "projectile")
 (evil-leader/set-key "p p" 'projectile-switch-project)
@@ -221,6 +222,7 @@
 (evil-leader/set-key "t w" 'toggle-word-wrap)
 (evil-leader/set-key "t t" 'toggle-truncate-lines)
 (evil-leader/set-key "t n" 'linum-mode)
+(evil-leader/set-key-for-mode 'org-mode "t l" 'org-toggle-link-display)
 
 ;; Quit
 (which-key-declare-prefixes "<SPC> q" "quit")
