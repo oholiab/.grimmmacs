@@ -1,5 +1,10 @@
 (require 'package)
 
+(set-language-environment "UTF-8")
+(set-default-coding-systems 'utf-8)
+(set-selection-coding-system 'utf-8)
+(set-clipboard-coding-system 'utf-8)
+(set-terminal-coding-system 'utf-8)
 (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
 (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
 (add-to-list 'package-archives '("melpa-stable" . "http://stable.melpa.org/packages/"))
@@ -35,6 +40,7 @@
 (use-package flymake :ensure t)
 (use-package flymake-cursor :ensure t)
 (use-package terraform-mode :ensure t)
+(use-package auto-complete :ensure t)
 ;; For elpy:
 ;; pip install rope
 ;; pip install jedi
@@ -53,6 +59,7 @@
   (add-hook 'evil-org-mode-hook
 	    (lambda ()
 	      (evil-org-set-key-theme))))
+(use-package go-mode :ensure t)
 
 (if (version< emacs-version "25")
     (progn
@@ -70,6 +77,12 @@
 (defun re-source-ssh-auth ()
   "Takes the contents of `~/.ssh_socket` and exports as SSH_AUTH_SOCK (for reattaching to ssh agent whilst in mosh)"
   (setenv "SSH_AUTH_SOCK" (replace-regexp-in-string "\n$" "" (get-file-contents "~/.ssh_socket"))))
+
+(defun auto-compile ()
+  (interactive)
+  (if (member major-mode '(go-mode))
+      (setq compile-command "go build ."))
+  (compile compile-command))
 
 (require 'which-key)
 (require 'helm-config)
@@ -114,6 +127,10 @@
         (ielm))
     (switch-to-buffer-other-window "*ielm*")))
 
+;; Compile
+(which-key-declare-prefixes "<SPC> c" "compile")
+(evil-leader/set-key "c c" 'auto-compile)
+
 ;; Meta stuff
 (which-key-declare-prefixes "<SPC> <SPC>" "meta")
 (evil-leader/set-key "<SPC> t" 'run-or-raise-term-buffer)
@@ -134,6 +151,7 @@
 (evil-leader/set-key-for-mode 'emacs-lisp-mode "m e b" 'eval-buffer)
 (evil-leader/set-key-for-mode 'clojure-mode "m e r" 'cider-eval-region)
 (evil-leader/set-key-for-mode 'clojure-mode "m e b" 'cider-eval-buffer)
+(evil-leader/set-key-for-mode 'clojure-mode "m e f" 'cider-eval-defun-at-point)
 (evil-leader/set-key-for-mode 'python-mode "m e b" 'elpy-shell-send-buffer-and-go)
 (which-key-declare-prefixes "<SPC> m c" "compile")
 (evil-leader/set-key-for-mode 'rust-mode "m c c" 'rust-compile)
@@ -211,7 +229,7 @@
 (evil-leader/set-key "o b" 'org-iswitchb)
 (which-key-declare-prefixes-for-mode 'org-mode "<SPC> m t" "todo")
 (evil-leader/set-key-for-mode 'org-mode "m t t" 'org-todo)
-(evil-leader/set-key-for-mode 'org-mode "m t i" 'org-insert-todo-heading)
+(evil-leader/set-key-for-mode 'org-mode "m t i" 'org-insert-todo-heading-respect-content)
 (which-key-declare-prefixes-for-mode 'org-mode "<SPC> m l" "link")
 (evil-leader/set-key-for-mode 'org-mode "m l o" 'org-open-at-point)
 (evil-leader/set-key-for-mode 'org-mode "m l i" 'org-insert-link)
@@ -255,7 +273,7 @@
  'org-babel-load-languages
  '((emacs-lisp . t)
    (org . t)
-   (sh . t)
+   (shell . t)
    (python . t)))
 
 (setq org-todo-keyword-faces
@@ -280,3 +298,5 @@
 (add-hook 'python-mode-hook (lambda () (unless (eq buffer-file-name nil) (flymake-mode 1))))
 (setq elpy-test-pytest-runner-command '("python" "-m" "pytest"))
 (setq elpy-test-runner 'elpy-test-pytest-runner)
+(auto-complete-mode)
+(show-paren-mode 1)
