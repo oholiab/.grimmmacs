@@ -300,3 +300,10 @@
 (setq elpy-test-runner 'elpy-test-pytest-runner)
 (auto-complete-mode)
 (show-paren-mode 1)
+
+(add-hook 'org-mode-hook (lambda ()
+			   (if (string= (buffer-substring 1 9) "#+REVEAL")
+			       (progn (require 'ox-reveal)
+				      (evil-leader/set-key-for-mode 'org-mode "c c" 'org-reveal-export-to-html-and-browse)
+				      (message "Reveal mode!"))
+			     (message "Not reveal mode"))))
