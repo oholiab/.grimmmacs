@@ -22,25 +22,38 @@
 ;; Pretty
 (use-package cyberpunk-theme :ensure t)
 
+;; Input
 (use-package evil :ensure t)
 (use-package evil-leader :ensure t)
 (use-package helm :ensure t)
 (use-package lispy :ensure t)
-(use-package evil-lispy :ensure t)
 (use-package magit :ensure t)
 (use-package evil-magit :ensure t)
 (use-package which-key :ensure t)
+(use-package projectile :ensure t)
+(use-package helm-projectile :ensure t)
+(projectile-mode)
+(use-package auto-complete :ensure t)
+(use-package evil-org
+  :ensure t
+  :after org
+  :config
+  (add-hook 'org-mode-hook 'evil-org-mode)
+  (add-hook 'evil-org-mode-hook
+	    (lambda ()
+	      (evil-org-set-key-theme))))
+
+;; Languages
 (use-package markdown-mode :ensure t)
 (use-package rust-mode :ensure t)
-(use-package cider :ensure t)
-(use-package projectile :ensure t)
-(projectile-mode)
-(use-package helm-projectile :ensure t)
+(use-package cider
+  :ensure t
+  :config (add-hook 'clojure-mode-hook 'lispy-mode)
+          (add-hook 'cider-repl-mode 'lispy-mode))
 (use-package org :ensure org-plus-contrib :pin org)
 (use-package flymake :ensure t)
 (use-package flymake-cursor :ensure t)
 (use-package terraform-mode :ensure t)
-(use-package auto-complete :ensure t)
 ;; For elpy:
 ;; pip install rope
 ;; pip install jedi
@@ -50,23 +63,22 @@
 ;; pip install autopep8
 ;; # and yapf for code formatting
 ;; pip install yapf
-(use-package elpy :ensure t)
-(use-package evil-org
+(use-package elpy
   :ensure t
-  :after org
-  :config
-  (add-hook 'org-mode-hook 'evil-org-mode)
-  (add-hook 'evil-org-mode-hook
-	    (lambda ()
-	      (evil-org-set-key-theme))))
-(use-package go-mode :ensure t)
+  :config (add-hook 'python-mode-hook
+		    (lambda () (setq python-indent 4))))
+(use-package go-mode
+  :ensure t
+  :config (add-hook 'go-mode-hook (lambda () (setq compile-command "go build ."))))
+(use-package racket-mode
+  :ensure t
+  :config (add-hook 'racket-mode-hook #'lispy-mode)
+          (add-hook 'racket-repl-mode-hook #'lispy-mode))
+(use-package yaml-mode :ensure t)
 
 (if (version< emacs-version "25")
     (progn
       (defalias 'outline-show-all 'show-all)))
-
-(if (file-exists-p "~/.grimmmacs/jira.el")
-    (load "~/.grimmmacs/jira.el"))
 
 (defun get-file-contents (filename)
   "Return the contents of FILENAME."
@@ -78,19 +90,22 @@
   "Takes the contents of `~/.ssh_socket` and exports as SSH_AUTH_SOCK (for reattaching to ssh agent whilst in mosh)"
   (setenv "SSH_AUTH_SOCK" (replace-regexp-in-string "\n$" "" (get-file-contents "~/.ssh_socket"))))
 
-(defun auto-compile ()
-  (interactive)
-  (if (member major-mode '(go-mode))
-      (setq compile-command "go build ."))
-  (compile compile-command))
+(defmacro comment (&rest body)
+  "Comment out one or more s-expressions"
+  nil)
+
+(comment (defun auto-compile ()
+	   (interactive)
+	   (if (member major-mode '(go-mode))
+	       (setq compile-command "go build ."))
+	   (compile compile-command)))
 
 (require 'which-key)
 (require 'helm-config)
 (require 'evil-leader)
 (require 'evil-magit)
-(require 'evil-lispy)
-(add-hook 'emacs-lisp-mode-hook #'evil-lispy-mode)
-(add-hook 'clojure-mode-hook #'evil-lispy-mode)
+(add-hook 'emacs-lisp-mode-hook #'lispy-mode)
+(add-hook 'clojure-mode-hook #'lispy-mode)
 (require 'evil)
 (setq evil-want-C-i-jump nil)
 (setq evil-esc-delay 0)
@@ -106,6 +121,24 @@
 (add-to-list 'which-key-replacement-alist '(("RET" . nil) . ("⏎  " . nil)))
 (add-to-list 'which-key-replacement-alist '(("DEL" . nil) . ("⇤  " . nil)))
 (add-to-list 'which-key-replacement-alist '(("SPC" . nil) . ("␣  " . nil)))
+(add-hook 'clojure-mode-hook
+	  (lambda ()
+	    (font-lock-add-keywords nil
+				    `(("(\\(fn\\)[\[[:space:]]"
+				       (0 (progn (compose-region (match-beginning 1)
+								 (match-end 1) "λ"))))
+				      ("(\\(partial\\)[\[[:space:]]"
+				       (0 (progn (compose-region (match-beginning 1)
+								 (match-end 1) "Ƥ"))))
+				      ("(\\(comp\\)[\[[:space:]]"
+				       (0 (progn (compose-region (match-beginning 1)
+								 (match-end 1) "∘"))))
+				      ("\\(#\\)("
+				       (0 (progn (compose-region (match-beginning 1)
+								 (match-end 1) "ƒ"))))
+				      ("\\(#\\){"
+				       (0 (progn (compose-region (match-beginning 1)
+								 (match-end 1) "∈"))))))))
 
 (defun run-or-raise-term-buffer ()
   "Create or visit a terminal buffer."
@@ -129,7 +162,7 @@
 
 ;; Compile
 (which-key-declare-prefixes "<SPC> c" "compile")
-(evil-leader/set-key "c c" 'auto-compile)
+(evil-leader/set-key "c c" 'compile)
 
 ;; Meta stuff
 (which-key-declare-prefixes "<SPC> <SPC>" "meta")
@@ -149,6 +182,8 @@
 (which-key-declare-prefixes "<SPC> m e" "evaluate")
 (evil-leader/set-key-for-mode 'emacs-lisp-mode "m e r" 'eval-region)
 (evil-leader/set-key-for-mode 'emacs-lisp-mode "m e b" 'eval-buffer)
+(evil-leader/set-key-for-mode 'racket-mode "m e r" 'racket-send-region)
+(evil-leader/set-key-for-mode 'racket-mode "m e b" 'racket-run-and-switch-to-repl)
 (evil-leader/set-key-for-mode 'clojure-mode "m e r" 'cider-eval-region)
 (evil-leader/set-key-for-mode 'clojure-mode "m e b" 'cider-eval-buffer)
 (evil-leader/set-key-for-mode 'clojure-mode "m e f" 'cider-eval-defun-at-point)
@@ -250,17 +285,12 @@
 (which-key-declare-prefixes "<SPC> q" "quit")
 (evil-leader/set-key "q S" 'save-buffers-kill-terminal)
 
-
-;; NFI, probably needs changing
-(require 'lispy)
-(defun enable-lispy-mode () (lispy-mode 1))
-
-(add-hook 'emacs-lisp-mode-hook       #'enable-lispy-mode)
-(add-hook 'eval-expression-minibuffer-setup-hook #'enable-lispy-mode)
-(add-hook 'ielm-mode-hook             #'enable-lispy-mode)
-(add-hook 'lisp-mode-hook             #'enable-lispy-mode)
-(add-hook 'lisp-interaction-mode-hook #'enable-lispy-mode)
-(add-hook 'scheme-mode-hook           #'enable-lispy-mode)
+(add-hook 'emacs-lisp-mode-hook       #'lispy-mode)
+(add-hook 'eval-expression-minibuffer-setup-hook #'lispy-mode)
+(add-hook 'ielm-mode-hook             #'lispy-mode)
+(add-hook 'lisp-mode-hook             #'lispy-mode)
+(add-hook 'lisp-interaction-mode-hook #'lispy-mode)
+(add-hook 'scheme-mode-hook           #'lispy-mode)
 
 (evil-mode t)
 (menu-bar-mode -1)
@@ -307,3 +337,32 @@
 				      (evil-leader/set-key-for-mode 'org-mode "c c" 'org-reveal-export-to-html-and-browse)
 				      (message "Reveal mode!"))
 			     (message "Not reveal mode"))))
+
+(add-hook 'org-mode-hook (lambda () (setq fill-column 80)))
+(define-key helm-find-files-map "\t" 'helm-execute-persistent-action)
+
+(defun describe-foo-at-point ()
+          "Show the documentation of the Elisp function and variable near point.
+	This checks in turn:
+	-- for a function name where point is
+	-- for a variable name where point is
+	-- for a surrounding function call
+	"
+	  (interactive)
+	  (let (sym)
+	    ;; sigh, function-at-point is too clever.  we want only the first half.
+	    (cond ((setq sym (ignore-errors
+                               (with-syntax-table emacs-lisp-mode-syntax-table
+                                 (save-excursion
+                                   (or (not (zerop (skip-syntax-backward "_w")))
+                                       (eq (char-syntax (char-after (point))) ?w)
+                                       (eq (char-syntax (char-after (point))) ?_)
+                                       (forward-sexp -1))
+                                   (skip-chars-forward "`'")
+        	                   (let ((obj (read (current-buffer))))
+                                     (and (symbolp obj) (fboundp obj) obj))))))
+                   (describe-function sym))
+                  ((setq sym (variable-at-point)) (describe-variable sym))
+                  ;; now let it operate fully -- i.e. also check the
+                  ;; surrounding sexp for a function call.
+                  ((setq sym (function-at-point)) (describe-function sym)))))
