@@ -60,6 +60,7 @@
 	    (lambda ()
 	      (evil-org-set-key-theme))))
 (use-package go-mode :ensure t)
+(use-package racket-mode :ensure t)
 
 (if (version< emacs-version "25")
     (progn
@@ -149,6 +150,9 @@
 (which-key-declare-prefixes "<SPC> m e" "evaluate")
 (evil-leader/set-key-for-mode 'emacs-lisp-mode "m e r" 'eval-region)
 (evil-leader/set-key-for-mode 'emacs-lisp-mode "m e b" 'eval-buffer)
+(evil-leader/set-key-for-mode 'racket-mode "m e r" 'racket-send-region)
+(evil-leader/set-key-for-mode 'racket-mode "m e b" 'racket-run)
+(evil-leader/set-key-for-mode 'racket-mode "m e f" 'racket-eval-defun-at-point)
 (evil-leader/set-key-for-mode 'clojure-mode "m e r" 'cider-eval-region)
 (evil-leader/set-key-for-mode 'clojure-mode "m e b" 'cider-eval-buffer)
 (evil-leader/set-key-for-mode 'clojure-mode "m e f" 'cider-eval-defun-at-point)
@@ -161,6 +165,7 @@
 (which-key-declare-prefixes-for-mode 'python-mode "<SPC> m t" "test")
 (evil-leader/set-key-for-mode 'python-mode "m t t" 'elpy-test)
 (which-key-declare-prefixes "<SPC> m s" "repl")
+(evil-leader/set-key-for-mode 'racket-mode "m s i" 'racket-repl)
 (evil-leader/set-key-for-mode 'clojure-mode "m s i" 'cider-jack-in)
 (evil-leader/set-key-for-mode 'clojure-mode "m s s" 'cider-repl)
 (evil-leader/set-key-for-mode 'python-mode "m s i" 'elpy-shell-switch-to-shell)
@@ -249,6 +254,7 @@
 ;; Quit
 (which-key-declare-prefixes "<SPC> q" "quit")
 (evil-leader/set-key "q S" 'save-buffers-kill-terminal)
+(evil-leader/set-key "q q" 'kill-emacs)
 
 
 ;; NFI, probably needs changing
