@@ -65,18 +65,12 @@
 ;; pip install yapf
 (use-package elpy
   :ensure t
-<<<<<<< HEAD
   :after org
   :config
   (add-hook 'org-mode-hook 'evil-org-mode)
   (add-hook 'evil-org-mode-hook
 	    (lambda ()
 	      (evil-org-set-key-theme))))
-(use-package go-mode :ensure t)
-(use-package racket-mode :ensure t)
-=======
-  :config (add-hook 'python-mode-hook
-		    (lambda () (setq python-indent 4))))
 (use-package go-mode
   :ensure t
   :config (add-hook 'go-mode-hook (lambda () (setq compile-command "go build ."))))
@@ -85,7 +79,6 @@
   :config (add-hook 'racket-mode-hook #'lispy-mode)
           (add-hook 'racket-repl-mode-hook #'lispy-mode))
 (use-package yaml-mode :ensure t)
->>>>>>> 3d42e66370d6b7010c53d0ec94e4310f1d9ed844
 
 (if (version< emacs-version "25")
     (progn
@@ -150,6 +143,12 @@
 				      ("\\(#\\){"
 				       (0 (progn (compose-region (match-beginning 1)
 								 (match-end 1) "∈"))))))))
+(add-hook 'emacs-lisp-mode-hook
+	  (lambda ()
+	    (font-lock-add-keywords nil
+				    `(("(\\(lambda\\) "
+				       (0 (progn (compose-region (match-beginning 1)
+								 (match-end 1) "λ"))))))))
 
 (defun run-or-raise-term-buffer ()
   "Create or visit a terminal buffer."
@@ -353,6 +352,9 @@
 			     (message "Not reveal mode"))))
 
 (add-hook 'org-mode-hook (lambda () (setq fill-column 80)))
+(add-hook 'org-mode-hook (lambda ()
+			   (toggle-truncate-lines)
+			   (toggle-word-wrap)))
 (define-key helm-find-files-map "\t" 'helm-execute-persistent-action)
 
 (defun describe-foo-at-point ()
