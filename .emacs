@@ -79,6 +79,8 @@
   :config (add-hook 'racket-mode-hook #'lispy-mode)
           (add-hook 'racket-repl-mode-hook #'lispy-mode))
 (use-package yaml-mode :ensure t)
+(use-package fennel-mode :ensure t
+  :config (add-hook 'fennel-mode-hook #'lispy-mode))
 
 (if (version< emacs-version "25")
     (progn
