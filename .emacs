@@ -17,6 +17,12 @@
   (lambda (x) (string= (file-name-extension x) "el"))
   (directory-files "~/.grimmmacs" t)))
 
+(setq backup-directory-alist
+      `((".*" . ,temporary-file-directory)))
+
+(setq auto-save-file-name-transforms
+      `((".*", temporary-file-directory t)))
+
 (setq package-enable-at-startup nil)
 (package-initialize)
 
@@ -40,6 +46,7 @@
 (use-package which-key :ensure t)
 (use-package projectile :ensure t)
 (use-package helm-projectile :ensure t)
+(use-package helm-describe-modes :ensure t)
 (projectile-mode)
 (use-package auto-complete :ensure t)
 (use-package evil-org
@@ -62,6 +69,7 @@
 (use-package flymake :ensure t)
 (use-package flymake-cursor :ensure t)
 (use-package terraform-mode :ensure t)
+(use-package puppet-mode :ensure t)
 ;; For elpy:
 ;; pip install rope
 ;; pip install jedi
