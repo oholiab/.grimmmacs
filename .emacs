@@ -1,5 +1,7 @@
 (require 'package)
 
+(setq exec-path (append exec-path '("/usr/local/bin")))
+
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
 (set-selection-coding-system 'utf-8)
@@ -8,6 +10,12 @@
 (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
 (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
 (add-to-list 'package-archives '("melpa-stable" . "http://stable.melpa.org/packages/"))
+
+(seq-map
+ 'load-file
+ (seq-filter
+  (lambda (x) (string= (file-name-extension x) "el"))
+  (directory-files "~/.grimmmacs" t)))
 
 (setq package-enable-at-startup nil)
 (package-initialize)
@@ -48,8 +56,8 @@
 (use-package rust-mode :ensure t)
 (use-package cider
   :ensure t
-  :config (add-hook 'clojure-mode-hook 'lispy-mode)
-          (add-hook 'cider-repl-mode 'lispy-mode))
+  :config (add-hook 'clojure-mode-hook #'lispy-mode)
+          (add-hook 'cider-repl-mode #'lispy-mode))
 (use-package org :ensure org-plus-contrib :pin org)
 (use-package flymake :ensure t)
 (use-package flymake-cursor :ensure t)
@@ -71,13 +79,10 @@
   (add-hook 'evil-org-mode-hook
 	    (lambda ()
 	      (evil-org-set-key-theme))))
+(use-package virtualenvwrapper :ensure t)
 (use-package go-mode
   :ensure t
   :config (add-hook 'go-mode-hook (lambda () (setq compile-command "go build ."))))
-(use-package racket-mode
-  :ensure t
-  :config (add-hook 'racket-mode-hook #'lispy-mode)
-          (add-hook 'racket-repl-mode-hook #'lispy-mode))
 (use-package yaml-mode :ensure t)
 
 (if (version< emacs-version "25")
@@ -187,6 +192,10 @@
 (which-key-declare-prefixes "<SPC> f" "file")
 (evil-leader/set-key "f f" 'helm-find-files)
 
+;; Smerge
+(which-key-declare-prefixes "<SPC> s" "smerge")
+(evil-leader/set-key-for-mode 'smerge-mode "s " smerge-mode-map)
+
 ;; Mode tree
 (which-key-declare-prefixes "<SPC> m" "mode")
 (which-key-declare-prefixes "<SPC> m e" "evaluate")
@@ -280,6 +289,7 @@
 (which-key-declare-prefixes-for-mode 'org-mode "<SPC> m l" "link")
 (evil-leader/set-key-for-mode 'org-mode "m l o" 'org-open-at-point)
 (evil-leader/set-key-for-mode 'org-mode "m l i" 'org-insert-link)
+(evil-leader/set-key-for-mode 'org-mode "m l j" 'enter-jira-link)
 
 ;; Projectile
 (which-key-declare-prefixes "<SPC> p" "projectile")
@@ -355,6 +365,14 @@
 (add-hook 'org-mode-hook (lambda ()
 			   (toggle-truncate-lines)
 			   (toggle-word-wrap)))
+
+(defun enter-jira-link (ticket)
+  "expand an org-mode jira link for an interactively entered ticket"
+  (interactive "sTicket #: ")
+  (let* ((ticket-parts (split-string ticket "/"))
+	 (ticket-no (nth (- (length ticket-parts) 1) ticket-parts)))
+    (insert (concat "[[" jira-url "/browse/" ticket-no "][" ticket-no "]]"))))
+
 (define-key helm-find-files-map "\t" 'helm-execute-persistent-action)
 
 (defun describe-foo-at-point ()
