@@ -84,6 +84,8 @@
   :ensure t
   :config (add-hook 'go-mode-hook (lambda () (setq compile-command "go build ."))))
 (use-package yaml-mode :ensure t)
+(use-package fennel-mode :ensure t
+  :config (add-hook 'fennel-mode-hook #'lispy-mode))
 
 (if (version< emacs-version "25")
     (progn
