@@ -1,25 +1,35 @@
 (require 'package)
 
+;; Something daft to do with emacs not respecting $PATH
 (setq exec-path (append exec-path '("/usr/local/bin")))
 
+;; Encoding nonsense to make pasting UTF-8 work
 (set-language-environment "UTF-8")
 (set-default-coding-systems 'utf-8)
 (set-selection-coding-system 'utf-8)
 (set-clipboard-coding-system 'utf-8)
 (set-terminal-coding-system 'utf-8)
-(add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
-(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
-(add-to-list 'package-archives '("melpa-stable" . "http://stable.melpa.org/packages/"))
 
+;; Set up package repositories
+(add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/"))
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/"))
+
+;; Load additional ELISP files in the configuration directory
 (seq-map
  'load-file
  (seq-filter
   (lambda (x) (string= (file-name-extension x) "el"))
+  ;; TODO: Make this portable
   (directory-files "~/.grimmmacs" t)))
+
+;; Gather autosaves and backups in a sensible place
+(setq temporary-file-directory "~/.emacstmp")
+(if (not (file-directory-p temporary-file-directory))
+    (mkdir temporary-file-directory))
 
 (setq backup-directory-alist
       `((".*" . ,temporary-file-directory)))
-
 (setq auto-save-file-name-transforms
       `((".*", temporary-file-directory t)))
 
