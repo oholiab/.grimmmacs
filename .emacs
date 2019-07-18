@@ -1,5 +1,12 @@
 (require 'package)
 
+;; Ditch the menu bar
+(menu-bar-mode -1)
+
+;; Stop emacs from saving and modifying its own nonsense
+(setq custom-file "/tmp/null")
+(load custom-file 'noerror)
+
 ;; Something daft to do with emacs not respecting $PATH
 (setq exec-path (append exec-path '("/usr/local/bin")))
 
@@ -10,10 +17,14 @@
 (set-clipboard-coding-system 'utf-8)
 (set-terminal-coding-system 'utf-8)
 
-;; Set up package repositories
-(add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/"))
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
-(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/"))
+;; Gather autosaves and backups in a sensible place
+(setq temporary-file-directory "~/.emacstmp")
+(if (not (file-directory-p temporary-file-directory))
+    (mkdir temporary-file-directory))
+(setq backup-directory-alist
+      `((".*" . ,temporary-file-directory)))
+(setq auto-save-file-name-transforms
+      `((".*", temporary-file-directory t)))
 
 ;; Load additional ELISP files in the configuration directory
 (seq-map
@@ -23,15 +34,15 @@
   ;; TODO: Make this portable
   (directory-files "~/.grimmmacs" t)))
 
-;; Gather autosaves and backups in a sensible place
-(setq temporary-file-directory "~/.emacstmp")
-(if (not (file-directory-p temporary-file-directory))
-    (mkdir temporary-file-directory))
+;; Some lisp help
+(setq show-paren-delay 0
+      show-paren-when-point-inside-paren t)
+(show-paren-mode t)
 
-(setq backup-directory-alist
-      `((".*" . ,temporary-file-directory)))
-(setq auto-save-file-name-transforms
-      `((".*", temporary-file-directory t)))
+;; Set up package system
+(add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/"))
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/"))
 
 (setq package-enable-at-startup nil)
 (package-initialize)
@@ -51,22 +62,18 @@
 (use-package evil-leader :ensure t)
 (use-package helm :ensure t)
 (use-package lispy :ensure t)
+(use-package which-key :ensure t)
+(use-package auto-complete :ensure t)
+
+;; Git
 (use-package magit :ensure t)
 (use-package evil-magit :ensure t)
-(use-package which-key :ensure t)
+
+;; I don't use either of these ever and I probably should!
 (use-package projectile :ensure t)
 (use-package helm-projectile :ensure t)
 (use-package helm-describe-modes :ensure t)
 (projectile-mode)
-(use-package auto-complete :ensure t)
-(use-package evil-org
-  :ensure t
-  :after org
-  :config
-  (add-hook 'org-mode-hook 'evil-org-mode)
-  (add-hook 'evil-org-mode-hook
-	    (lambda ()
-	      (evil-org-set-key-theme))))
 
 ;; Languages
 (use-package markdown-mode :ensure t)
@@ -75,7 +82,6 @@
   :ensure t
   :config (add-hook 'clojure-mode-hook #'lispy-mode)
           (add-hook 'cider-repl-mode #'lispy-mode))
-(use-package org :ensure org-plus-contrib :pin org)
 (use-package flymake :ensure t)
 (use-package flymake-cursor :ensure t)
 (use-package terraform-mode :ensure t)
@@ -105,30 +111,23 @@
 (use-package fennel-mode :ensure t
   :config (add-hook 'fennel-mode-hook #'lispy-mode))
 
+;; org-mode
+(use-package org :ensure org-plus-contrib :pin org)
+(use-package evil-org
+  :ensure t
+  :after org
+  :config
+  (add-hook 'org-mode-hook 'evil-org-mode)
+  (add-hook 'evil-org-mode-hook
+	    (lambda ()
+	      (evil-org-set-key-theme))))
+
+;; org-mode hack for low emacs versions
 (if (version< emacs-version "25")
     (progn
       (defalias 'outline-show-all 'show-all)))
 
-(defun get-file-contents (filename)
-  "Return the contents of FILENAME."
-  (with-temp-buffer
-    (insert-file-contents filename)
-    (buffer-string)))
-
-(defun re-source-ssh-auth ()
-  "Takes the contents of `~/.ssh_socket` and exports as SSH_AUTH_SOCK (for reattaching to ssh agent whilst in mosh)"
-  (setenv "SSH_AUTH_SOCK" (replace-regexp-in-string "\n$" "" (get-file-contents "~/.ssh_socket"))))
-
-(defmacro comment (&rest body)
-  "Comment out one or more s-expressions"
-  nil)
-
-(comment (defun auto-compile ()
-	   (interactive)
-	   (if (member major-mode '(go-mode))
-	       (setq compile-command "go build ."))
-	   (compile compile-command)))
-
+;; Turn a bunch of the packages on
 (require 'which-key)
 (require 'helm-config)
 (require 'evil-leader)
@@ -175,6 +174,27 @@
 				       (0 (progn (compose-region (match-beginning 1)
 								 (match-end 1) "λ"))))))))
 
+;; Custom functions
+(defun get-file-contents (filename)
+  "Return the contents of FILENAME."
+  (with-temp-buffer
+    (insert-file-contents filename)
+    (buffer-string)))
+
+(defun re-source-ssh-auth ()
+  "Takes the contents of `~/.ssh_socket` and exports as SSH_AUTH_SOCK (for reattaching to ssh agent whilst in mosh)"
+  (setenv "SSH_AUTH_SOCK" (replace-regexp-in-string "\n$" "" (get-file-contents "~/.ssh_socket"))))
+
+(defmacro comment (&rest body)
+  "Comment out one or more s-expressions"
+  nil)
+
+(comment (defun auto-compile ()
+	   (interactive)
+	   (if (member major-mode '(go-mode))
+	       (setq compile-command "go build ."))
+	   (compile compile-command)))
+
 (defun run-or-raise-term-buffer ()
   "Create or visit a terminal buffer."
   (interactive)
@@ -195,6 +215,49 @@
         (ielm))
     (switch-to-buffer-other-window "*ielm*")))
 
+(defun run-make ()
+  (interactive)
+  (shell-command-to-string "make"))
+
+(defun reload-ff ()
+  (interactive)
+  (shell-command-to-string "osascript ~/reloadff.scpt"))
+
+(defun describe-foo-at-point ()
+          "Show the documentation of the Elisp function and variable near point.
+	This checks in turn:
+	-- for a function name where point is
+	-- for a variable name where point is
+	-- for a surrounding function call
+	"
+	  (interactive)
+	  (let (sym)
+	    ;; sigh, function-at-point is too clever.  we want only the first half.
+	    (cond ((setq sym (ignore-errors
+                               (with-syntax-table emacs-lisp-mode-syntax-table
+                                 (save-excursion
+                                   (or (not (zerop (skip-syntax-backward "_w")))
+                                       (eq (char-syntax (char-after (point))) ?w)
+                                       (eq (char-syntax (char-after (point))) ?_)
+                                       (forward-sexp -1))
+                                   (skip-chars-forward "`'")
+        	                   (let ((obj (read (current-buffer))))
+                                     (and (symbolp obj) (fboundp obj) obj))))))
+                   (describe-function sym))
+                  ((setq sym (variable-at-point)) (describe-variable sym))
+                  ;; now let it operate fully -- i.e. also check the
+                  ;; surrounding sexp for a function call.
+                  ((setq sym (function-at-point)) (describe-function sym)))))
+
+(defun enter-jira-link (ticket)
+  "expand an org-mode jira link for an interactively entered ticket"
+  (interactive "sTicket #: ")
+  (let* ((ticket-parts (split-string ticket "/"))
+	 (ticket-no (nth (- (length ticket-parts) 1) ticket-parts)))
+    (insert (concat "[[" jira-url "/browse/" ticket-no "][" ticket-no "]]"))))
+
+
+;; Key bindings
 ;; Compile
 (which-key-declare-prefixes "<SPC> c" "compile")
 (evil-leader/set-key "c c" 'compile)
@@ -285,14 +348,6 @@
 (evil-leader/set-key "k" lispy-mode-map)
 (helm-mode 1)
 
-(defun run-make ()
-  (interactive)
-  (shell-command-to-string "make"))
-
-(defun reload-ff ()
-  (interactive)
-  (shell-command-to-string "osascript ~/reloadff.scpt"))
-
 ;; Command execution
 (which-key-declare-prefixes "<SPC> x" "execute")
 (evil-leader/set-key "x m" 'run-make)
@@ -336,11 +391,6 @@
 (add-hook 'scheme-mode-hook           #'lispy-mode)
 
 (evil-mode t)
-(menu-bar-mode -1)
-
-;; Fuck you
-(setq custom-file "/tmp/null")
-(load custom-file 'noerror)
 
 (org-babel-do-load-languages
  'org-babel-load-languages
@@ -353,16 +403,14 @@
       '(("CANCELED" . (:foreground "blue" :weight bold))
         ("DEFERRED" . (:foreground "gray" :weight bold))))
 
+;; Bunch of python nonsense
 (require 'flymake)
 (require 'flymake-cursor)
 
 (defun flymake-pylint-init ()
- (let* ((temp-file (flymake-init-create-temp-buffer-copy
-                     'flymake-create-temp-inplace))
-		             (local-file (file-relative-name
-			                          temp-file
-						                       (file-name-directory buffer-file-name))))
-								          (list "pyflakes" (list local-file))))
+ (let* ((temp-file (flymake-init-create-temp-buffer-copy 'flymake-create-temp-inplace))
+	(local-file (file-relative-name temp-file (file-name-directory buffer-file-name))))
+  (list "pyflakes" (list local-file))))
 
 (add-to-list 'flymake-allowed-file-name-masks
              '("\\.py\\'" flymake-pylint-init))
@@ -374,11 +422,12 @@
 (auto-complete-mode)
 (show-paren-mode 1)
 
+;; More org magic
 (add-hook 'org-mode-hook (lambda ()
 			   (if (string= (buffer-substring 1 9) "#+REVEAL")
 			       (progn (require 'ox-reveal)
-				      (evil-leader/set-key-for-mode 'org-mode "c c" 'org-reveal-export-to-html-and-browse)
-				      (message "Reveal mode!"))
+				      (evil-leader/set-key-for-mode
+					'org-mode "c c" 'org-reveal-export-to-html-and-browse))
 			     (message "Not reveal mode"))))
 
 (add-hook 'org-mode-hook (lambda () (setq fill-column 80)))
@@ -386,37 +435,5 @@
 			   (toggle-truncate-lines)
 			   (toggle-word-wrap)))
 
-(defun enter-jira-link (ticket)
-  "expand an org-mode jira link for an interactively entered ticket"
-  (interactive "sTicket #: ")
-  (let* ((ticket-parts (split-string ticket "/"))
-	 (ticket-no (nth (- (length ticket-parts) 1) ticket-parts)))
-    (insert (concat "[[" jira-url "/browse/" ticket-no "][" ticket-no "]]"))))
-
 (define-key helm-find-files-map "\t" 'helm-execute-persistent-action)
 
-(defun describe-foo-at-point ()
-          "Show the documentation of the Elisp function and variable near point.
-	This checks in turn:
-	-- for a function name where point is
-	-- for a variable name where point is
-	-- for a surrounding function call
-	"
-	  (interactive)
-	  (let (sym)
-	    ;; sigh, function-at-point is too clever.  we want only the first half.
-	    (cond ((setq sym (ignore-errors
-                               (with-syntax-table emacs-lisp-mode-syntax-table
-                                 (save-excursion
-                                   (or (not (zerop (skip-syntax-backward "_w")))
-                                       (eq (char-syntax (char-after (point))) ?w)
-                                       (eq (char-syntax (char-after (point))) ?_)
-                                       (forward-sexp -1))
-                                   (skip-chars-forward "`'")
-        	                   (let ((obj (read (current-buffer))))
-                                     (and (symbolp obj) (fboundp obj) obj))))))
-                   (describe-function sym))
-                  ((setq sym (variable-at-point)) (describe-variable sym))
-                  ;; now let it operate fully -- i.e. also check the
-                  ;; surrounding sexp for a function call.
-                  ((setq sym (function-at-point)) (describe-function sym)))))
