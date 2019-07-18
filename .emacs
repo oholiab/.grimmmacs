@@ -125,7 +125,7 @@
   (add-hook 'evil-org-mode-hook
 	    (lambda ()
 	      (evil-org-set-key-theme))))
-(use-package virtualenvwrapper :ensure t)
+;; Appears to be broken (use-package virtualenvwrapper :ensure t)
 (use-package go-mode
   :ensure t
   :config (add-hook 'go-mode-hook (lambda () (setq compile-command "go build ."))))
