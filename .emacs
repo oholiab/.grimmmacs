@@ -1,6 +1,11 @@
 (require 'package)
 
+;; Stop emacs from saving and modifying its own nonsense
+(setq custom-file "/tmp/null")
+(load custom-file 'noerror)
+
 ;; Ditch the menu bar and speed things up
+
 (menu-bar-mode -1)
 (setq inhibit-startup-screen t
       inhibit-startup-buffer-menu t
@@ -9,18 +14,17 @@
 
 ;; Set default widths
 (setq-default fill-column 72
-	      tab-width 2)
+	            tab-width 2)
 
 ;; Let me drop back into files at the same position
 (save-place-mode t)
 
 ;; Only create a new output buffer for shell commands if one is needed
 (setq-default async-shell-command-display-buffer nil
-	      async-shell-command-buffer 'new-buffer)
+	            async-shell-command-buffer 'new-buffer)
 
-;; Stop emacs from saving and modifying its own nonsense
-(setq custom-file "/tmp/null")
-(load custom-file 'noerror)
+;; Jump straight to help buffers
+(setq help-window-select t)
 
 ;; Something daft to do with emacs not respecting $PATH
 (setq exec-path (append exec-path '("/usr/local/bin")))
@@ -53,6 +57,8 @@
 (setq show-paren-delay 0
       show-paren-when-point-inside-paren t)
 (show-paren-mode t)
+
+(setq eldoc-idle-delay 0.1)
 
 ;; Set up package system
 (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/"))
