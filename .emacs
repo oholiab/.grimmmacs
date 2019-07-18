@@ -1,7 +1,22 @@
 (require 'package)
 
-;; Ditch the menu bar
+;; Ditch the menu bar and speed things up
 (menu-bar-mode -1)
+(setq inhibit-startup-screen t
+      inhibit-startup-buffer-menu t
+      inhibit-startup-message t
+      inhibit-startup-hooks t)
+
+;; Set default widths
+(setq-default fill-column 72
+	      tab-width 2)
+
+;; Let me drop back into files at the same position
+(save-place-mode t)
+
+;; Only create a new output buffer for shell commands if one is needed
+(setq-default async-shell-command-display-buffer nil
+	      async-shell-command-buffer 'new-buffer)
 
 ;; Stop emacs from saving and modifying its own nonsense
 (setq custom-file "/tmp/null")
