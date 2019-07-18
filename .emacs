@@ -77,6 +77,7 @@
 
 ;; Pretty
 (use-package cyberpunk-theme :ensure t)
+(use-package highlight-parentheses :ensure t)
 
 ;; Input
 (use-package evil :ensure t)
@@ -164,6 +165,8 @@
 (setq which-key-enable-extended-define-key 1)
 (setq which-key-idle-delay 0.001)
 (which-key-mode)
+(require 'highlight-parentheses)
+(highlight-parentheses-mode)
 
 ;; Prettify
 (add-to-list 'which-key-replacement-alist '(("TAB" . nil) . ("↹  " . nil)))
