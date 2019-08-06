@@ -86,6 +86,7 @@
 (use-package lispy :ensure t)
 (use-package which-key :ensure t)
 (use-package auto-complete :ensure t)
+(use-package elisp-def :ensure t)
 
 ;; Git
 (use-package magit :ensure t)
@@ -128,7 +129,13 @@
 ;; Appears to be broken (use-package virtualenvwrapper :ensure t)
 (use-package go-mode
   :ensure t
-  :config (add-hook 'go-mode-hook (lambda () (setq compile-command "go build ."))))
+  :config
+	(setq gofmt-cmd "goimports")
+	(add-hook 'go-mode-hook (lambda () (setq compile-command "go build .")))
+	(add-hook 'go-mode-hook (lambda () (add-hook 'before-save-hook 'gofmt-before-save))))
+(use-package go-eldoc
+  :ensure t
+  :init (add-hook 'go-mode-hook 'go-eldoc-setup))
 (use-package yaml-mode :ensure t)
 (use-package fennel-mode :ensure t
   :config (add-hook 'fennel-mode-hook #'lispy-mode))
@@ -273,15 +280,48 @@
                   ;; surrounding sexp for a function call.
                   ((setq sym (function-at-point)) (describe-function sym)))))
 
+;; Org-mode customizations
+(setq work-log-dir "~/.org")
+(defun log-work (work)
+	"Log some work that we've just done"
+	(interactive "sDescription: ")
+	(make-directory work-log-dir t)
+	(let* ((org-files (directory-files work-log-dir))
+				 (todays-file (concat (format-time-string "%Y-%m-%d") ".org"))
+				 (todays-file-fullpath (concat work-log-dir "/" todays-file))
+				 (entry (concat "* " (log-linkify work) "\n")))
+		(let (oldbuf (current-buffer))
+			(save-excursion
+				(find-file todays-file-fullpath)
+				(end-of-buffer)
+				(insert entry)
+				(switch-to-buffer oldbuf)
+				(save-buffer)))))
+
+(defun link-token (token)
+	(let ((token-parts (split-string token "/")))
+		(if (member (nth 0 (split-string (nth (- (length token-parts) 1) token-parts) "-")) jira-prefixes)
+				(jira-subst-link token)
+			token)))
+
+(defun jira-subst-link (ticket)
+  (let* ((ticket-parts (split-string ticket "/"))
+	       (ticket-no (nth (- (length ticket-parts) 1) ticket-parts)))
+    (concat "[[" jira-url "/browse/" ticket-no "][" ticket-no "]]")))
+
+(defun log-linkify (text)
+  (string-join (seq-map 'link-token (split-string text)) " "))
+
 (defun enter-jira-link (ticket)
   "expand an org-mode jira link for an interactively entered ticket"
   (interactive "sTicket #: ")
-  (let* ((ticket-parts (split-string ticket "/"))
-	 (ticket-no (nth (- (length ticket-parts) 1) ticket-parts)))
-    (insert (concat "[[" jira-url "/browse/" ticket-no "][" ticket-no "]]"))))
+  (insert (jira-subst-link ticket)))
 
 
 ;; Key bindings
+;; org logging
+(evil-leader/set-key "l" 'log-work)
+
 ;; Compile
 (which-key-declare-prefixes "<SPC> c" "compile")
 (evil-leader/set-key "c c" 'compile)
@@ -308,6 +348,7 @@
 (which-key-declare-prefixes "<SPC> m e" "evaluate")
 (evil-leader/set-key-for-mode 'emacs-lisp-mode "m e r" 'eval-region)
 (evil-leader/set-key-for-mode 'emacs-lisp-mode "m e b" 'eval-buffer)
+(evil-leader/set-key-for-mode 'emacs-lisp-mode "m e f" 'eval-defun)
 (evil-leader/set-key-for-mode 'racket-mode "m e r" 'racket-send-region)
 (evil-leader/set-key-for-mode 'racket-mode "m e f" 'racket-eval-defun-at-point)
 (evil-leader/set-key-for-mode 'racket-mode "m e b" 'racket-run-and-switch-to-repl)
@@ -315,6 +356,10 @@
 (evil-leader/set-key-for-mode 'clojure-mode "m e b" 'cider-eval-buffer)
 (evil-leader/set-key-for-mode 'clojure-mode "m e f" 'cider-eval-defun-at-point)
 (evil-leader/set-key-for-mode 'python-mode "m e b" 'elpy-shell-send-buffer-and-go)
+(which-key-declare-prefixes "<SPC> m d" "def")
+(evil-leader/set-key-for-mode 'go-mode "m d j" 'godef-jump)
+(evil-leader/set-key-for-mode 'go-mode "m d d" 'godef-describe)
+(evil-leader/set-key-for-mode 'elisp-mode "m d d" 'elisp-def)
 (which-key-declare-prefixes "<SPC> m c" "compile")
 (evil-leader/set-key-for-mode 'rust-mode "m c c" 'rust-compile)
 (which-key-declare-prefixes-for-mode 'python-mode "<SPC> m f" "find")
@@ -390,6 +435,11 @@
 (evil-leader/set-key-for-mode 'org-mode "m l i" 'org-insert-link)
 (evil-leader/set-key-for-mode 'org-mode "m l j" 'enter-jira-link)
 
+;; Go
+(which-key-declare-prefixes-for-mode 'go-mode "<SPC> m d" "def")
+(evil-leader/set-key-for-mode 'go-mode "m d j" 'godef-jump)
+(evil-leader/set-key-for-mode 'go-mode "m d d" 'godef-describe)
+
 ;; Projectile
 (which-key-declare-prefixes "<SPC> p" "projectile")
 (evil-leader/set-key "p p" 'projectile-switch-project)
@@ -400,6 +450,7 @@
 (evil-leader/set-key "t w" 'toggle-word-wrap)
 (evil-leader/set-key "t t" 'toggle-truncate-lines)
 (evil-leader/set-key "t n" 'linum-mode)
+(evil-leader/set-key "t d" 'toggle-debug-on-error)
 (evil-leader/set-key-for-mode 'org-mode "t l" 'org-toggle-link-display)
 
 ;; Quit
