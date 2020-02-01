@@ -15,6 +15,7 @@
 ;; Set default widths
 (setq-default fill-column 72
 	            tab-width 2)
+(setq indent-tab-mode nil)
 
 ;; Let me drop back into files at the same position
 (save-place-mode t)
@@ -27,7 +28,7 @@
 (setq help-window-select t)
 
 ;; Something daft to do with emacs not respecting $PATH
-(setq exec-path (append exec-path '("/usr/local/bin")))
+;; (setq exec-path (append exec-path '("/usr/local/bin")))
 
 ;; Encoding nonsense to make pasting UTF-8 work
 (set-language-environment "UTF-8")
@@ -105,8 +106,7 @@
   :ensure t
   :config (add-hook 'clojure-mode-hook #'lispy-mode)
           (add-hook 'cider-repl-mode #'lispy-mode))
-(use-package flymake :ensure t)
-(use-package flymake-cursor :ensure t)
+(use-package flycheck :ensure t)
 (use-package terraform-mode :ensure t)
 (use-package puppet-mode :ensure t)
 ;; For elpy:
@@ -124,9 +124,13 @@
   :config
   (add-hook 'org-mode-hook 'evil-org-mode)
   (add-hook 'evil-org-mode-hook
-	    (lambda ()
-	      (evil-org-set-key-theme))))
+						(lambda ()
+							(evil-org-set-key-theme)))
+	(when (load "flycheck" t t)
+		(setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+		(add-hook 'elpy-mode-hook 'flycheck-mode)))
 ;; Appears to be broken (use-package virtualenvwrapper :ensure t)
+(setq elpy-rpc-python-command "python3")
 (use-package go-mode
   :ensure t
   :config
@@ -148,6 +152,7 @@
   :ensure t
   :after org
   :config
+	(require 'ox-confluence)
   (add-hook 'org-mode-hook 'evil-org-mode)
   (add-hook 'evil-org-mode-hook
 	    (lambda ()
@@ -297,8 +302,9 @@
 				(find-file todays-file-fullpath)
 				(end-of-buffer)
 				(insert entry)
-				(switch-to-buffer oldbuf)
-				(save-buffer)))))
+				(save-buffer)
+				(if (not (eq oldbuf (current-buffer)))
+						(switch-to-buffer oldbuf))))))
 
 (defun link-token (token)
 	(let ((token-parts (split-string token "/")))
@@ -321,10 +327,31 @@
   (interactive "sTicket #: ")
   (insert (jira-subst-link ticket)))
 
+(setq org-agenda-files (seq-filter
+												(lambda (x) (not (string= (substring x 0 1) ".")))
+												(directory-files "~/.org" t)))
+
+(defun pbcopy-region (beginning end)
+	(interactive "r")
+	(shell-command-on-region beginning end "pbcopy"))
+
+(defun whois-region (beginning end)
+	"Run whois over a set of newline separated IPs to dump ASN information at the bottom of the buffer"
+	(interactive "r")
+	(let* ((selection (buffer-substring beginning end))
+				 (entries (split-string selection "\n")))
+		(save-excursion
+			(end-of-buffer)
+			(insert "\n")
+			(seq-map (lambda (x) (insert (shell-command-to-string (concat "whois -m " x)))) entries))))
 
 ;; Key bindings
+(evil-leader/set-key "y" 'pbcopy-region)
+
 ;; org logging
-(evil-leader/set-key "l" 'log-work)
+(which-key-declare-prefixes "<SPC> l" "log")
+(evil-leader/set-key "l l" 'log-work)
+(evil-leader/set-key "l a" 'org-agenda)
 
 ;; Compile
 (which-key-declare-prefixes "<SPC> c" "compile")
@@ -360,6 +387,7 @@
 (evil-leader/set-key-for-mode 'clojure-mode "m e b" 'cider-eval-buffer)
 (evil-leader/set-key-for-mode 'clojure-mode "m e f" 'cider-eval-defun-at-point)
 (evil-leader/set-key-for-mode 'python-mode "m e b" 'elpy-shell-send-buffer-and-go)
+(evil-leader/set-key-for-mode 'org-mode "m e c" 'org-confluence-export-as-confluence)
 (which-key-declare-prefixes "<SPC> m d" "def")
 (evil-leader/set-key-for-mode 'go-mode "m d j" 'godef-jump)
 (evil-leader/set-key-for-mode 'go-mode "m d d" 'godef-describe)
@@ -456,6 +484,7 @@
 (evil-leader/set-key "t n" 'linum-mode)
 (evil-leader/set-key "t d" 'toggle-debug-on-error)
 (evil-leader/set-key-for-mode 'org-mode "t l" 'org-toggle-link-display)
+(evil-leader/set-key-for-mode 'org-mode "t i" 'org-indent-mode)
 
 ;; Quit
 (which-key-declare-prefixes "<SPC> q" "quit")
@@ -482,20 +511,6 @@
       '(("CANCELED" . (:foreground "blue" :weight bold))
         ("DEFERRED" . (:foreground "gray" :weight bold))))
 
-;; Bunch of python nonsense
-(require 'flymake)
-(require 'flymake-cursor)
-
-(defun flymake-pylint-init ()
- (let* ((temp-file (flymake-init-create-temp-buffer-copy 'flymake-create-temp-inplace))
-	(local-file (file-relative-name temp-file (file-name-directory buffer-file-name))))
-  (list "pyflakes" (list local-file))))
-
-(add-to-list 'flymake-allowed-file-name-masks
-             '("\\.py\\'" flymake-pylint-init))
-
-; Load flymake on non-temp buffers
-(add-hook 'python-mode-hook (lambda () (unless (eq buffer-file-name nil) (flymake-mode 1))))
 (setq elpy-test-pytest-runner-command '("python" "-m" "pytest"))
 (setq elpy-test-runner 'elpy-test-pytest-runner)
 (auto-complete-mode)
