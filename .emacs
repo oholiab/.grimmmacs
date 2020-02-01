@@ -139,6 +139,8 @@
 (use-package yaml-mode :ensure t)
 (use-package fennel-mode :ensure t
   :config (add-hook 'fennel-mode-hook #'lispy-mode))
+(use-package arduino-mode :ensure t)
+(use-package ansi-color :ensure t)
 
 ;; org-mode
 (use-package org :ensure org-plus-contrib :pin org)
@@ -300,8 +302,10 @@
 
 (defun link-token (token)
 	(let ((token-parts (split-string token "/")))
-		(if (member (nth 0 (split-string (nth (- (length token-parts) 1) token-parts) "-")) jira-prefixes)
-				(jira-subst-link token)
+		(if (boundp 'jira-prefixes)
+				(if (member (nth 0 (split-string (nth (- (length token-parts) 1) token-parts) "-")) jira-prefixes)
+						(jira-subst-link token)
+					token)
 			token)))
 
 (defun jira-subst-link (ticket)
