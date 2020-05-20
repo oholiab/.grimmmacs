@@ -225,6 +225,28 @@
     (insert-file-contents filename)
     (buffer-string)))
 
+(defun hexload (filename)
+	(insert (shell-command-to-string (format "xxd %s" filename))))
+
+(defun refresh-hex (filename)
+	(erase-buffer)
+	(hexload filename)
+	)
+
+(defun hexsave (filename)
+	(write-region
+	 (shell-command-on-region (point-min) (point-max) (format "xxd -r" filename))
+	 nil
+	 filename))
+
+(defun hex-ls ()
+	(interactive)
+	(refresh-hex "/bin/ls"))
+
+(defun hexsave-ls ()
+	(interactive)
+	(hexsave "/tmp/ls"))
+
 (defun re-source-ssh-auth ()
   "Takes the contents of `~/.ssh_socket` and exports as SSH_AUTH_SOCK (for reattaching to ssh agent whilst in mosh)"
   (setenv "SSH_AUTH_SOCK" (replace-regexp-in-string "\n$" "" (get-file-contents "~/.ssh_socket"))))
