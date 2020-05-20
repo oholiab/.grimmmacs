@@ -109,6 +109,7 @@
 (use-package flycheck :ensure t)
 (use-package terraform-mode :ensure t)
 (use-package puppet-mode :ensure t)
+(use-package racket-mode :ensure t)
 ;; For elpy:
 ;; pip install rope
 ;; pip install jedi
@@ -154,6 +155,7 @@
   :config
 	(require 'ox-confluence)
   (add-hook 'org-mode-hook 'evil-org-mode)
+  (add-hook 'org-mode-hook 'org-indent-mode)
   (add-hook 'evil-org-mode-hook
 	    (lambda ()
 	      (evil-org-set-key-theme))))
@@ -297,14 +299,17 @@
 				 (todays-file (concat (format-time-string "%Y-%m-%d") ".org"))
 				 (todays-file-fullpath (concat work-log-dir "/" todays-file))
 				 (entry (concat "* " (log-linkify work) "\n")))
-		(let (oldbuf (current-buffer))
-			(save-excursion
-				(find-file todays-file-fullpath)
-				(end-of-buffer)
-				(insert entry)
-				(save-buffer)
-				(if (not (eq oldbuf (current-buffer)))
-						(switch-to-buffer oldbuf))))))
+		(let ((oldbuf (current-buffer)))
+			(find-file todays-file-fullpath)
+			(end-of-buffer)
+			(insert entry)
+			(save-buffer)
+			(if (not (eq oldbuf (current-buffer)))
+					(switch-to-buffer (other-buffer))))))
+
+(defun code-block ()
+	(interactive)
+	(insert "#+BEGIN_SRC\n#+END_SRC"))
 
 (defun link-token (token)
 	(let ((token-parts (split-string token "/")))
@@ -459,13 +464,16 @@
 (evil-leader/set-key "o a" 'org-agenda)
 (evil-leader/set-key "o c" 'org-capture)
 (evil-leader/set-key "o b" 'org-iswitchb)
-(which-key-declare-prefixes-for-mode 'org-mode "<SPC> m t" "todo")
-(evil-leader/set-key-for-mode 'org-mode "m t t" 'org-todo)
-(evil-leader/set-key-for-mode 'org-mode "m t i" 'org-insert-todo-heading-respect-content)
+(which-key-declare-prefixes-for-mode 'org-mode "<SPC> m i" "insert")
+(evil-leader/set-key-for-mode 'org-mode "m i t" 'org-todo)
+(evil-leader/set-key-for-mode 'org-mode "m i T" 'org-insert-todo-heading-respect-content)
+(evil-leader/set-key-for-mode 'org-mode "m i c" 'code-block)
 (which-key-declare-prefixes-for-mode 'org-mode "<SPC> m l" "link")
 (evil-leader/set-key-for-mode 'org-mode "m l o" 'org-open-at-point)
 (evil-leader/set-key-for-mode 'org-mode "m l i" 'org-insert-link)
 (evil-leader/set-key-for-mode 'org-mode "m l j" 'enter-jira-link)
+(which-key-declare-prefixes-for-mode 'org-mode "<SPC> m s" "source")
+(evil-leader/set-key-for-mode 'org-mode "m s e" 'org-babel-execute-src-block)
 
 ;; Go
 (which-key-declare-prefixes-for-mode 'go-mode "<SPC> m d" "def")
