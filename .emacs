@@ -14,15 +14,15 @@
 
 ;; Set default widths
 (setq-default fill-column 72
-	            tab-width 2)
-(setq indent-tab-mode nil)
+              tab-width 2)
+(setq indent-tabs-mode nil)
 
 ;; Let me drop back into files at the same position
 (save-place-mode t)
 
 ;; Only create a new output buffer for shell commands if one is needed
 (setq-default async-shell-command-display-buffer nil
-	            async-shell-command-buffer 'new-buffer)
+              async-shell-command-buffer 'new-buffer)
 
 ;; Jump straight to help buffers
 (setq help-window-select t)
@@ -125,19 +125,19 @@
   :config
   (add-hook 'org-mode-hook 'evil-org-mode)
   (add-hook 'evil-org-mode-hook
-						(lambda ()
-							(evil-org-set-key-theme)))
-	(when (load "flycheck" t t)
-		(setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-		(add-hook 'elpy-mode-hook 'flycheck-mode)))
+            (lambda ()
+              (evil-org-set-key-theme)))
+  (when (load "flycheck" t t)
+    (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+    (add-hook 'elpy-mode-hook 'flycheck-mode)))
 ;; Appears to be broken (use-package virtualenvwrapper :ensure t)
 (setq elpy-rpc-python-command "python3")
 (use-package go-mode
   :ensure t
   :config
-	(setq gofmt-cmd "goimports")
-	(add-hook 'go-mode-hook (lambda () (setq compile-command "go build .")))
-	(add-hook 'go-mode-hook (lambda () (add-hook 'before-save-hook 'gofmt-before-save))))
+  (setq gofmt-cmd "goimports")
+  (add-hook 'go-mode-hook (lambda () (setq compile-command "go build .")))
+  (add-hook 'go-mode-hook (lambda () (add-hook 'before-save-hook 'gofmt-before-save))))
 (use-package go-eldoc
   :ensure t
   :init (add-hook 'go-mode-hook 'go-eldoc-setup))
@@ -149,20 +149,20 @@
 
 ;; org-mode
 (use-package org
-	:ensure org-plus-contrib
-	:pin org
-	:config
-	(add-hook 'org-mode-hook 'org-indent-mode))
+  :ensure org-plus-contrib
+  :pin org
+  :config
+  (add-hook 'org-mode-hook 'org-indent-mode))
 (use-package evil-org
   :ensure t
   :after org
   :config
-	(require 'ox-confluence)
+  (require 'ox-confluence)
   (add-hook 'org-mode-hook 'evil-org-mode)
   (add-hook 'org-mode-hook 'org-indent-mode)
   (add-hook 'evil-org-mode-hook
-	    (lambda ()
-	      (evil-org-set-key-theme))))
+      (lambda ()
+        (evil-org-set-key-theme))))
 
 ;; org-mode hack for low emacs versions
 (if (version< emacs-version "25")
@@ -194,29 +194,29 @@
 (add-to-list 'which-key-replacement-alist '(("DEL" . nil) . ("⇤  " . nil)))
 (add-to-list 'which-key-replacement-alist '(("SPC" . nil) . ("␣  " . nil)))
 (add-hook 'clojure-mode-hook
-	  (lambda ()
-	    (font-lock-add-keywords nil
-				    `(("(\\(fn\\)[\[[:space:]]"
-				       (0 (progn (compose-region (match-beginning 1)
-								 (match-end 1) "λ"))))
-				      ("(\\(partial\\)[\[[:space:]]"
-				       (0 (progn (compose-region (match-beginning 1)
-								 (match-end 1) "Ƥ"))))
-				      ("(\\(comp\\)[\[[:space:]]"
-				       (0 (progn (compose-region (match-beginning 1)
-								 (match-end 1) "∘"))))
-				      ("\\(#\\)("
-				       (0 (progn (compose-region (match-beginning 1)
-								 (match-end 1) "ƒ"))))
-				      ("\\(#\\){"
-				       (0 (progn (compose-region (match-beginning 1)
-								 (match-end 1) "∈"))))))))
+    (lambda ()
+      (font-lock-add-keywords nil
+            `(("(\\(fn\\)[\[[:space:]]"
+               (0 (progn (compose-region (match-beginning 1)
+                 (match-end 1) "λ"))))
+              ("(\\(partial\\)[\[[:space:]]"
+               (0 (progn (compose-region (match-beginning 1)
+                 (match-end 1) "Ƥ"))))
+              ("(\\(comp\\)[\[[:space:]]"
+               (0 (progn (compose-region (match-beginning 1)
+                 (match-end 1) "∘"))))
+              ("\\(#\\)("
+               (0 (progn (compose-region (match-beginning 1)
+                 (match-end 1) "ƒ"))))
+              ("\\(#\\){"
+               (0 (progn (compose-region (match-beginning 1)
+                 (match-end 1) "∈"))))))))
 (add-hook 'emacs-lisp-mode-hook
-	  (lambda ()
-	    (font-lock-add-keywords nil
-				    `(("(\\(lambda\\) "
-				       (0 (progn (compose-region (match-beginning 1)
-								 (match-end 1) "λ"))))))))
+    (lambda ()
+      (font-lock-add-keywords nil
+            `(("(\\(lambda\\) "
+               (0 (progn (compose-region (match-beginning 1)
+                 (match-end 1) "λ"))))))))
 
 ;; Custom functions
 (defun get-file-contents (filename)
@@ -234,10 +234,10 @@
   nil)
 
 (comment (defun auto-compile ()
-	   (interactive)
-	   (if (member major-mode '(go-mode))
-	       (setq compile-command "go build ."))
-	   (compile compile-command)))
+     (interactive)
+     (if (member major-mode '(go-mode))
+         (setq compile-command "go build ."))
+     (compile compile-command)))
 
 (defun run-or-raise-term-buffer ()
   "Create or visit a terminal buffer."
@@ -269,15 +269,15 @@
 
 (defun describe-foo-at-point ()
           "Show the documentation of the Elisp function and variable near point.
-	This checks in turn:
-	-- for a function name where point is
-	-- for a variable name where point is
-	-- for a surrounding function call
-	"
-	  (interactive)
-	  (let (sym)
-	    ;; sigh, function-at-point is too clever.  we want only the first half.
-	    (cond ((setq sym (ignore-errors
+  This checks in turn:
+  -- for a function name where point is
+  -- for a variable name where point is
+  -- for a surrounding function call
+  "
+    (interactive)
+    (let (sym)
+      ;; sigh, function-at-point is too clever.  we want only the first half.
+      (cond ((setq sym (ignore-errors
                                (with-syntax-table emacs-lisp-mode-syntax-table
                                  (save-excursion
                                    (or (not (zerop (skip-syntax-backward "_w")))
@@ -285,7 +285,7 @@
                                        (eq (char-syntax (char-after (point))) ?_)
                                        (forward-sexp -1))
                                    (skip-chars-forward "`'")
-        	                   (let ((obj (read (current-buffer))))
+                             (let ((obj (read (current-buffer))))
                                      (and (symbolp obj) (fboundp obj) obj))))))
                    (describe-function sym))
                   ((setq sym (variable-at-point)) (describe-variable sym))
@@ -296,36 +296,36 @@
 ;; Org-mode customizations
 (setq work-log-dir "~/.org")
 (defun log-work (work)
-	"Log some work that we've just done"
-	(interactive "sDescription: ")
-	(make-directory work-log-dir t)
-	(let* ((org-files (directory-files work-log-dir))
-				 (todays-file (concat (format-time-string "%Y-%m-%d") ".org"))
-				 (todays-file-fullpath (concat work-log-dir "/" todays-file))
-				 (entry (concat "* " (log-linkify work) "\n")))
-		(let ((oldbuf (current-buffer)))
-			(find-file todays-file-fullpath)
-			(end-of-buffer)
-			(insert entry)
-			(save-buffer)
-			(if (not (eq oldbuf (current-buffer)))
-					(switch-to-buffer (other-buffer))))))
+  "Log some work that we've just done"
+  (interactive "sDescription: ")
+  (make-directory work-log-dir t)
+  (let* ((org-files (directory-files work-log-dir))
+         (todays-file (concat (format-time-string "%Y-%m-%d") ".org"))
+         (todays-file-fullpath (concat work-log-dir "/" todays-file))
+         (entry (concat "* " (log-linkify work) "\n")))
+    (let ((oldbuf (current-buffer)))
+      (find-file todays-file-fullpath)
+      (end-of-buffer)
+      (insert entry)
+      (save-buffer)
+      (if (not (eq oldbuf (current-buffer)))
+          (switch-to-buffer (other-buffer))))))
 
 (defun code-block ()
-	(interactive)
-	(insert "#+BEGIN_SRC\n#+END_SRC"))
+  (interactive)
+  (insert "#+BEGIN_SRC\n#+END_SRC"))
 
 (defun link-token (token)
-	(let ((token-parts (split-string token "/")))
-		(if (boundp 'jira-prefixes)
-				(if (member (nth 0 (split-string (nth (- (length token-parts) 1) token-parts) "-")) jira-prefixes)
-						(jira-subst-link token)
-					token)
-			token)))
+  (let ((token-parts (split-string token "/")))
+    (if (boundp 'jira-prefixes)
+        (if (member (nth 0 (split-string (nth (- (length token-parts) 1) token-parts) "-")) jira-prefixes)
+            (jira-subst-link token)
+          token)
+      token)))
 
 (defun jira-subst-link (ticket)
   (let* ((ticket-parts (split-string ticket "/"))
-	       (ticket-no (nth (- (length ticket-parts) 1) ticket-parts)))
+         (ticket-no (nth (- (length ticket-parts) 1) ticket-parts)))
     (concat "[[" jira-url "/browse/" ticket-no "][" ticket-no "]]")))
 
 (defun log-linkify (text)
@@ -337,22 +337,22 @@
   (insert (jira-subst-link ticket)))
 
 (setq org-agenda-files (seq-filter
-												(lambda (x) (not (string= (substring x 0 1) ".")))
-												(directory-files "~/.org" t)))
+                        (lambda (x) (not (string= (substring x 0 1) ".")))
+                        (directory-files "~/.org" t)))
 
 (defun pbcopy-region (beginning end)
-	(interactive "r")
-	(shell-command-on-region beginning end "pbcopy"))
+  (interactive "r")
+  (shell-command-on-region beginning end "pbcopy"))
 
 (defun whois-region (beginning end)
-	"Run whois over a set of newline separated IPs to dump ASN information at the bottom of the buffer"
-	(interactive "r")
-	(let* ((selection (buffer-substring beginning end))
-				 (entries (split-string selection "\n")))
-		(save-excursion
-			(end-of-buffer)
-			(insert "\n")
-			(seq-map (lambda (x) (insert (shell-command-to-string (concat "whois -m " x)))) entries))))
+  "Run whois over a set of newline separated IPs to dump ASN information at the bottom of the buffer"
+  (interactive "r")
+  (let* ((selection (buffer-substring beginning end))
+         (entries (split-string selection "\n")))
+    (save-excursion
+      (end-of-buffer)
+      (insert "\n")
+      (seq-map (lambda (x) (insert (shell-command-to-string (concat "whois -m " x)))) entries))))
 
 ;; Key bindings
 (evil-leader/set-key "y" 'pbcopy-region)
@@ -530,16 +530,16 @@
 
 ;; More org magic
 (add-hook 'org-mode-hook (lambda ()
-			   (if (string= (buffer-substring 1 9) "#+REVEAL")
-			       (progn (require 'ox-reveal)
-				      (evil-leader/set-key-for-mode
-					'org-mode "c c" 'org-reveal-export-to-html-and-browse))
-			     (message "Not reveal mode"))))
+         (if (string= (buffer-substring 1 9) "#+REVEAL")
+             (progn (require 'ox-reveal)
+              (evil-leader/set-key-for-mode
+          'org-mode "c c" 'org-reveal-export-to-html-and-browse))
+           (message "Not reveal mode"))))
 
 (add-hook 'org-mode-hook (lambda () (setq fill-column 80)))
 (add-hook 'org-mode-hook (lambda ()
-			   (toggle-truncate-lines)
-			   (toggle-word-wrap)))
+         (toggle-truncate-lines)
+         (toggle-word-wrap)))
 
 (define-key helm-find-files-map "\t" 'helm-execute-persistent-action)
 
