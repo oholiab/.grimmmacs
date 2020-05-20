@@ -148,7 +148,11 @@
 (use-package ansi-color :ensure t)
 
 ;; org-mode
-(use-package org :ensure org-plus-contrib :pin org)
+(use-package org
+	:ensure org-plus-contrib
+	:pin org
+	:config
+	(add-hook 'org-mode-hook 'org-indent-mode))
 (use-package evil-org
   :ensure t
   :after org
