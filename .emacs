@@ -4,6 +4,9 @@
 (setq custom-file "/tmp/null")
 (load custom-file 'noerror)
 
+;; Load in custom files from .grimmmacs
+(load-file "~/.grimmmacs/nibbledit.el")
+
 ;; Ditch the menu bar and speed things up
 
 (menu-bar-mode -1)
