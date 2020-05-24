@@ -1,7 +1,5 @@
 (defvar nibble-hilights nil "nibble mode syntax highlighting")
 (setq nibble-raw-hex-start 11)
-(setq nibble-raw-hex-end 18)
-(setq nibble-raw-hex-padded-end 16)
 
 (setq nibble-highlights
 			'(("^[[:xdigit:]]\\{8\\}:" . font-lock-function-name-face)
@@ -9,6 +7,15 @@
 				("\\<[[:xdigit:]]\\{3\\}\\>" . font-lock-warning-face)
 				("  .+$" . font-lock-keyword-face)
 				))
+
+(defun nibble-find-raw-hex-end ()
+	(interactive)
+	(goto-char (point-max))
+	(previous-line)
+	(goto-char (line-beginning-position))
+	(re-search-forward "  ")
+	(goto-char (- (point) 3))
+	(next-line))
 
 (defun nibble-mode ()
 	(interactive)
@@ -59,11 +66,11 @@
   (interactive)
   (setq deactivate-mark nil)
   (nibble-delete-trailing-newlines)
-  (let ((raw-hex-start nibble-raw-hex-start)
-        (raw-hex-end (- (point-max) nibble-raw-hex-padded-end)))
-    (set-mark raw-hex-start)
-    (goto-char raw-hex-end))
-  (activate-mark))
+	(set-mark nibble-raw-hex-start)
+	(nibble-find-raw-hex-end)
+	(goto-char (+ (point) 2))
+  (activate-mark)
+	)
 
 (defun nibble-copy-raw-hex ()
   "Put raw hex in the rectangle copy buffer to be pasted with `yank-rectangle`"
