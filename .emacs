@@ -20,6 +20,12 @@
               tab-width 2)
 (setq indent-tabs-mode nil)
 
+;; Indent functions for use in hooks
+(defun fill-80 () (setq fill-column 80))
+(defun truncate-and-word-wrap ()
+	(toggle-truncate-lines)
+	(toggle-word-wrap))
+
 ;; Let me drop back into files at the same position
 (save-place-mode t)
 
@@ -126,10 +132,6 @@
   :ensure t
   :after org
   :config
-  (add-hook 'org-mode-hook 'evil-org-mode)
-  (add-hook 'evil-org-mode-hook
-            (lambda ()
-              (evil-org-set-key-theme)))
   (when (load "flycheck" t t)
     (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
     (add-hook 'elpy-mode-hook 'flycheck-mode)))
@@ -151,21 +153,33 @@
 (use-package ansi-color :ensure t)
 
 ;; org-mode
+(customize-set-variable 'ispell-program-name "aspell")
+(customize-set-variable 'ispell-extra-args '("--sug-mode=ultra"))
+(setq org-hide-emphasis-markers t)
 (use-package org
   :ensure org-plus-contrib
   :pin org
-  :config
-  (add-hook 'org-mode-hook 'org-indent-mode))
+	:config
+  (add-hook 'org-mode-hook 'org-indent-mode)
+	(defun org-face-customizations ()
+		(set-face-attribute 'org-verbatim nil
+												:foreground "green"))
+	(add-hook 'org-mode-hook 'org-face-customizations)
+	(add-hook 'org-mode-hook 'fill-80)
+	(add-hook 'org-mode-hook 'truncate-and-word-wrap)
+  (add-hook 'org-mode-hook (lambda () (setq org-list-allow-alphabetical t))))
+
 (use-package evil-org
   :ensure t
   :after org
   :config
   (require 'ox-confluence)
   (add-hook 'org-mode-hook 'evil-org-mode)
-  (add-hook 'org-mode-hook 'org-indent-mode)
-  (add-hook 'evil-org-mode-hook
-      (lambda ()
-        (evil-org-set-key-theme))))
+	(defun evil-org-key-theme-settings () (evil-org-set-key-theme))
+  (add-hook 'evil-org-mode-hook 'evil-org-key-theme-settings)
+  (add-hook 'evil-org-mode-hook 'flyspell-mode))
+  
+(use-package htmlize :ensure t)
 
 ;; org-mode hack for low emacs versions
 (if (version< emacs-version "25")
@@ -222,6 +236,13 @@
                  (match-end 1) "λ"))))))))
 
 ;; Custom functions
+(defun flycheck-save-word ()
+  (interactive)
+  (let ((current-location (point))
+         (word (flyspell-get-word)))
+    (when (consp word)    
+      (flyspell-do-correct 'save nil (car word) current-location (cadr word) (caddr word) current-location))))
+
 (defun get-file-contents (filename)
   "Return the contents of FILENAME."
   (with-temp-buffer
@@ -318,6 +339,10 @@
   (interactive)
   (insert "#+BEGIN_SRC\n#+END_SRC"))
 
+(defun insert-title ()
+  (interactive)
+  (insert "#+TITLE: "))
+
 (defun link-token (token)
   (let ((token-parts (split-string token "/")))
     (if (boundp 'jira-prefixes)
@@ -369,10 +394,17 @@
 (which-key-declare-prefixes "<SPC> c" "compile")
 (evil-leader/set-key "c c" 'compile)
 
+(defun reload-major-mode ()
+  "Reload the current major mode, good for re-running hooks"
+	(interactive)
+	(funcall major-mode))
+
 ;; Meta stuff
 (which-key-declare-prefixes "<SPC> <SPC>" "meta")
 (evil-leader/set-key "<SPC> t" 'run-or-raise-term-buffer)
 (evil-leader/set-key "<SPC> r" 'run-or-raise-ielm-buffer)
+(evil-leader/set-key "<SPC> v" 'describe-variable)
+(evil-leader/set-key "<SPC> R" 'reload-major-mode)
 
 ;; Help tree
 (which-key-declare-prefixes "<SPC> h" "help")
@@ -472,8 +504,8 @@
 (evil-leader/set-key "o c" 'org-capture)
 (evil-leader/set-key "o b" 'org-iswitchb)
 (which-key-declare-prefixes-for-mode 'org-mode "<SPC> m i" "insert")
-(evil-leader/set-key-for-mode 'org-mode "m i t" 'org-todo)
-(evil-leader/set-key-for-mode 'org-mode "m i T" 'org-insert-todo-heading-respect-content)
+(evil-leader/set-key-for-mode 'org-mode "m i T" 'insert-title)
+(evil-leader/set-key-for-mode 'org-mode "m i t" 'org-insert-todo-heading-respect-content)
 (evil-leader/set-key-for-mode 'org-mode "m i c" 'code-block)
 (which-key-declare-prefixes-for-mode 'org-mode "<SPC> m l" "link")
 (evil-leader/set-key-for-mode 'org-mode "m l o" 'org-open-at-point)
@@ -481,6 +513,13 @@
 (evil-leader/set-key-for-mode 'org-mode "m l j" 'enter-jira-link)
 (which-key-declare-prefixes-for-mode 'org-mode "<SPC> m s" "source")
 (evil-leader/set-key-for-mode 'org-mode "m s e" 'org-babel-execute-src-block)
+
+
+;; Spelling
+(which-key-declare-prefixes "<SPC> m s" "spelling")
+(evil-leader/set-key-for-mode 'org-mode "s s" 'flycheck-save-word)
+(evil-leader/set-key-for-mode 'org-mode "s i" 'ispell)
+(evil-leader/set-key-for-mode 'org-mode "s c" 'ispell-word)
 
 ;; Go
 (which-key-declare-prefixes-for-mode 'go-mode "<SPC> m d" "def")
@@ -532,17 +571,6 @@
 (show-paren-mode 1)
 
 ;; More org magic
-(add-hook 'org-mode-hook (lambda ()
-         (if (string= (buffer-substring 1 9) "#+REVEAL")
-             (progn (require 'ox-reveal)
-              (evil-leader/set-key-for-mode
-          'org-mode "c c" 'org-reveal-export-to-html-and-browse))
-           (message "Not reveal mode"))))
-
-(add-hook 'org-mode-hook (lambda () (setq fill-column 80)))
-(add-hook 'org-mode-hook (lambda ()
-         (toggle-truncate-lines)
-         (toggle-word-wrap)))
 
 (define-key helm-find-files-map "\t" 'helm-execute-persistent-action)
 
