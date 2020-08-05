@@ -157,6 +157,7 @@
 (customize-set-variable 'ispell-extra-args '("--sug-mode=ultra"))
 (setq org-hide-emphasis-markers t)
 (setq org-agenda-todo-ignore-scheduled 'all)
+(setq org-export-with-section-numbers nil)
 (use-package org
   :ensure org-plus-contrib
   :pin org
@@ -403,6 +404,7 @@
 (which-key-declare-prefixes "<SPC> l" "log")
 (evil-leader/set-key "l l" 'log-work)
 (evil-leader/set-key "l a" 'org-agenda)
+(evil-leader/set-key "l t" 'log-work-todo)
 
 ;; Compile
 (which-key-declare-prefixes "<SPC> c" "compile")
