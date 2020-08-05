@@ -364,9 +364,7 @@
   (interactive "sTicket #: ")
   (insert (jira-subst-link ticket)))
 
-(setq org-agenda-files (seq-filter
-                        (lambda (x) (not (string= (substring x 0 1) ".")))
-                        (directory-files "~/.org" t)))
+(setq org-agenda-files (file-expand-wildcards "~/.org/agenda/*.org"))
 
 (defun pbcopy-region (beginning end)
   (interactive "r")
