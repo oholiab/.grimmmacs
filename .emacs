@@ -156,6 +156,7 @@
 (customize-set-variable 'ispell-program-name "aspell")
 (customize-set-variable 'ispell-extra-args '("--sug-mode=ultra"))
 (setq org-hide-emphasis-markers t)
+(setq org-agenda-todo-ignore-scheduled 'all)
 (use-package org
   :ensure org-plus-contrib
   :pin org
@@ -335,6 +336,21 @@
       (if (not (eq oldbuf (current-buffer)))
           (switch-to-buffer (other-buffer))))))
 
+(setq work-todo-file "~/.org/agenda/work.org")
+(defun log-work-todo (work)
+	"Log a todo to work agenda"
+	(interactive "sTODO: ")
+	;; Assuming existance of the dir because lazy
+	(let ((entry (concat "* TODO " (log-linkify work) "\n"))
+				(oldbuf (current-buffer)))
+		(find-file work-todo-file)
+		(end-of-buffer)
+		(insert entry)
+		(save-buffer)
+		(if (not (eq oldbuf (current-buffer)))
+				(switch-to-buffer (other-buffer)))))
+
+
 (defun code-block ()
   (interactive)
   (insert "#+BEGIN_SRC\n#+END_SRC"))
@@ -418,6 +434,8 @@
 
 ;; Mode tree
 (which-key-declare-prefixes "<SPC> m" "mode")
+(evil-leader/set-key-for-mode 'org-mode "m d" 'org-deadline)
+(evil-leader/set-key-for-mode 'org-mode "m s" 'org-schedule)
 (which-key-declare-prefixes "<SPC> m e" "evaluate")
 (evil-leader/set-key-for-mode 'emacs-lisp-mode "m e r" 'eval-region)
 (evil-leader/set-key-for-mode 'emacs-lisp-mode "m e b" 'eval-buffer)
