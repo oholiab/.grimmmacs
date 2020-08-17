@@ -158,6 +158,7 @@
 (setq org-hide-emphasis-markers t)
 (setq org-agenda-todo-ignore-scheduled 'all)
 (setq org-export-with-section-numbers nil)
+(setq org-export-time-stamp-file nil)
 (use-package org
   :ensure org-plus-contrib
   :pin org
@@ -182,6 +183,10 @@
   (add-hook 'evil-org-mode-hook 'flyspell-mode))
   
 (use-package htmlize :ensure t)
+
+(add-hook 'c-mode-hook 'flymake-mode)
+(setq c-default-style "linux"
+			c-basic-offset 4)
 
 ;; org-mode hack for low emacs versions
 (if (version< emacs-version "25")
